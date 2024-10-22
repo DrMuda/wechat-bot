@@ -22,18 +22,13 @@ export class RecvdController {
   async recvd(@Body() body: any): Promise<RecvdRes> {
     const type = body.type;
     const isMentioned = body.isMentioned;
-    const content = (body.content as string).replace('@木小博士 ', '');
+    const content = (body.content as string).replace('@木小博士 ', '').trim();
     if (isMentioned !== '1') return { success: false };
     if (type !== 'text') return { success: false };
 
-    switch (content) {
-      case Keywords.Holiday:
-        return this.appService.holiday();
-      case Keywords.OffWork:
-        return this.appService.offWork();
-      case Keywords.Countdown:
-        return this.appService.countdown();
-    }
+    if(content.includes(Keywords.Holiday)){return this.appService.holiday()}
+    if(content.includes(Keywords.OffWork)){return this.appService.offWork()}
+    if(content.includes(Keywords.Countdown)){return this.appService.countdown()}
 
     return {
       success: true,
