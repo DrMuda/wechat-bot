@@ -10,7 +10,7 @@ dayjs.extend(duration);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault('Asia/Shanghai');
-console.log(dayjs.tz.guess());
+console.log('时区', dayjs.tz.guess());
 
 export interface RecvdRes {
   success: boolean;
@@ -109,8 +109,6 @@ export class RecvdService {
     const toSix = dayjs
       .duration(dayjs().set('hour', 18).set('minutes', 0).diff(dayjs()))
       .format('HH:mm');
-
-    console.log(dayjs().set('hour', 17).set('minutes', 30).diff(dayjs()));
 
     const list = [
       `距离五点半下班还剩 ${toHalfFive}`,
