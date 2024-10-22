@@ -1,9 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { RecvdService, RecvdRes } from './recvd.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -26,9 +21,15 @@ export class RecvdController {
     if (isMentioned !== '1') return { success: false };
     if (type !== 'text') return { success: false };
 
-    if(content.includes(Keywords.Holiday)){return this.appService.holiday()}
-    if(content.includes(Keywords.OffWork)){return this.appService.offWork()}
-    if(content.includes(Keywords.Countdown)){return this.appService.countdown()}
+    if (content.includes(Keywords.Holiday)) {
+      return this.appService.holiday();
+    }
+    if (content.includes(Keywords.OffWork)) {
+      return this.appService.offWork();
+    }
+    if (content.includes(Keywords.Countdown)) {
+      return this.appService.countdown();
+    }
 
     return {
       success: true,
