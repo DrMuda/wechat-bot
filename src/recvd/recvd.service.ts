@@ -3,6 +3,13 @@ import { Injectable } from '@nestjs/common';
 const dayjs = require('dayjs');
 // @ts-ignore
 const { Lunar } = require('lunar-javascript');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+const duration = require('dayjs/plugin/duration');
+dayjs.extend(duration);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault('Asia/Shanghai');
 
 export interface RecvdRes {
   success: boolean;
@@ -24,14 +31,12 @@ const msToDay = (ms: number) => {
 export class RecvdService {
   getNextLunarHolidayDiff(month: number, day: number): number {
     const currentYear = dayjs().year();
-    const currentMonth = dayjs().month();
-    const currentDay = dayjs().day();
     let lunar = Lunar.fromYmd(currentYear, month, day);
     let solar = lunar.getSolar();
-    if (
-      (solar.getMonth() as number) < currentMonth ||
-      (solar.getDay() as number) < currentDay
-    ) {
+    let thisYearHoliday = dayjs(
+      `${solar.getYear()}-${solar.getMonth()}-${solar.getDay()}`,
+    );
+    if (thisYearHoliday.unix() < dayjs().unix()) {
       lunar = Lunar.fromYmd(currentYear + 1, month, day);
       solar = lunar.getSolar();
     }
@@ -42,34 +47,32 @@ export class RecvdService {
   }
   getNextSolarHolidayDiff(month: number, day: number): number {
     const currentYear = dayjs().year();
-    const currentMonth = dayjs().month();
-    const currentDay = dayjs().day();
-    let solar = dayjs(`${currentYear}-${month}-${day}`);
-    if (
-      (solar.month() as number) < currentMonth ||
-      (solar.day() as number) < currentDay
-    ) {
-      solar = dayjs(`${currentYear + 1}-${month}-${day}`);
+    let thisYearHoliday = dayjs(`${currentYear}-${month}-${day}`);
+    if (thisYearHoliday.unix() > dayjs()) {
+      return msToDay(thisYearHoliday().diff(dayjs()));
     }
-    return msToDay(solar.diff(dayjs()));
+    return msToDay(dayjs(`${currentYear + 1}-${month}-${day}`).diff());
   }
   getNextTombSweepingDayDiff(): number {
-    const currentYear = dayjs().year();
-    const currentMonth = dayjs().month();
-    const currentDay = dayjs().day();
+    const currentYear = dayjs().year() as number;
+    const thisYearLast2Num = Number(currentYear.toString().slice(2));
+    const nextYearLast2Num = Number((currentYear + 1).toString().slice(2));
     let thisYearTombSweepingDay =
-      currentYear * 0.2422 + 4.81 - (isLeapYear(currentYear) ? 1 : 0);
+      thisYearLast2Num * 0.2422 + 4.81 - thisYearLast2Num / 4;
     thisYearTombSweepingDay = Math.floor(thisYearTombSweepingDay);
     let nextYearTombSweepingDay =
-      (currentYear + 1) * 0.2422 + 4.81 - (isLeapYear(currentYear + 1) ? 1 : 0);
+      nextYearLast2Num * 0.2422 + 4.81 - nextYearLast2Num / 4;
     nextYearTombSweepingDay = Math.floor(nextYearTombSweepingDay);
-    if (currentMonth > 4 || currentDay > thisYearTombSweepingDay) {
+    if (
+      dayjs(`${currentYear}-4-${thisYearTombSweepingDay}`).unix() >
+      dayjs().unix()
+    ) {
       return msToDay(
-        dayjs(`${currentYear + 1}-4-${nextYearTombSweepingDay}`).diff(dayjs()),
+        dayjs(`${currentYear}-4-${thisYearTombSweepingDay}`).diff(dayjs()),
       );
     }
     return msToDay(
-      dayjs(`${currentYear}-4-${thisYearTombSweepingDay}`).diff(dayjs()),
+      dayjs(`${currentYear + 1}-4-${nextYearTombSweepingDay}`).diff(dayjs()),
     );
   }
 
@@ -83,14 +86,14 @@ export class RecvdService {
     const midAutumn = this.getNextLunarHolidayDiff(8, 15);
     const nationalDay = this.getNextSolarHolidayDiff(10, 1);
     const list = [
-      `距离元旦还剩${newYearsDay}天`,
-      `距离春节还剩${theSpringFestival}天`,
-      `距离清明节还剩${tombSweepingDay}天`,
-      `距离劳动节还剩${laborDay}天`,
-      `距离端午节还剩${theDragonBoatFestival}天`,
-      `距离儿童节还剩${childrenDay}天`,
-      `距离中秋节还剩${midAutumn}天`,
-      `距离国庆节还剩${nationalDay}天`,
+      `距离元旦还剩${Math.floor(newYearsDay)}天`,
+      `距离春节还剩${Math.floor(theSpringFestival)}天`,
+      `距离清明节还剩${Math.floor(tombSweepingDay)}天`,
+      `距离劳动节还剩${Math.floor(laborDay)}天`,
+      `距离端午节还剩${Math.floor(theDragonBoatFestival)}天`,
+      `距离儿童节还剩${Math.floor(childrenDay)}天`,
+      `距离中秋节还剩${Math.floor(midAutumn)}天`,
+      `距离国庆节还剩${Math.floor(nationalDay)}天`,
     ].join('\n');
     return {
       success: true,
@@ -102,12 +105,15 @@ export class RecvdService {
   }
 
   offWork(): RecvdRes {
-    const toHalfFive = dayjs(
-      dayjs().diff(dayjs().set('hour', 17).set('minutes', 30)),
-    ).format('h:m');
-    const toSix = dayjs(
-      dayjs().diff(dayjs().set('hour', 18).set('minutes', 0)),
-    ).format('h:m');
+    const toHalfFive = dayjs
+      .duration(dayjs().set('hour', 17).set('minutes', 30).diff(dayjs()))
+      .format('H:m');
+    const toSix = dayjs
+      .duration(dayjs().set('hour', 18).set('minutes', 0).diff(dayjs()))
+      .format('H:m');
+
+    console.log(dayjs().set('hour', 17).set('minutes', 30).diff(dayjs()));
+
     const list = [
       `距离五点半下班还剩 ${toHalfFive}`,
       `距离六点下班还剩 ${toSix}`,

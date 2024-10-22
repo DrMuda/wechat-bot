@@ -1,9 +1,7 @@
 import {
   Body,
   Controller,
-  Get,
   Post,
-  Req,
   UseInterceptors,
 } from '@nestjs/common';
 import { RecvdService, RecvdRes } from './recvd.service';
