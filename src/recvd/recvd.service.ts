@@ -10,6 +10,7 @@ dayjs.extend(duration);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault('Asia/Shanghai');
+console.log(dayjs.tz.guess());
 
 export interface RecvdRes {
   success: boolean;
@@ -20,9 +21,6 @@ export interface RecvdRes {
   };
 }
 
-const isLeapYear = (year: number) => {
-  return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
-};
 const msToDay = (ms: number) => {
   return ms / 1000 / 60 / 60 / 24;
 };
@@ -107,10 +105,10 @@ export class RecvdService {
   offWork(): RecvdRes {
     const toHalfFive = dayjs
       .duration(dayjs().set('hour', 17).set('minutes', 30).diff(dayjs()))
-      .format('H:m');
+      .format('HH:mm');
     const toSix = dayjs
       .duration(dayjs().set('hour', 18).set('minutes', 0).diff(dayjs()))
-      .format('H:m');
+      .format('HH:mm');
 
     console.log(dayjs().set('hour', 17).set('minutes', 30).diff(dayjs()));
 

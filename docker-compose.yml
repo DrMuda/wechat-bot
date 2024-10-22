@@ -1,0 +1,16 @@
+
+services:
+  wechat-bot:
+    build: .
+    container_name: wechat-bot
+    ports:
+      - "3000:3000"
+    networks:
+      - my-network
+    volumes:
+      - .:/app
+    command: node dist/main
+
+networks:
+  my-network:
+    driver: bridge
