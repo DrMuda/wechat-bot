@@ -24,7 +24,7 @@ export class RecvdController {
   async recvd(@Body() body: any): Promise<RecvdRes> {
     const type = body.type;
     const isMentioned = body.isMentioned;
-    const content = body.content;
+    const content = (body.content as string).replace('@木小博士 ', '');
     if (isMentioned !== '1') return { success: false };
     if (type !== 'text') return { success: false };
 

@@ -11,8 +11,6 @@ RUN pnpm i
 
 # Rebuild the source code only when needed
 FROM node:18-alpine AS builder
-RUN apk add --no-cache libc6-compat
-RUN apk add --no-cache git
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
