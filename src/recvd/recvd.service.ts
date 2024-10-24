@@ -80,19 +80,21 @@ export class RecvdService {
     const tombSweepingDay = this.getNextTombSweepingDayDiff();
     const laborDay = this.getNextSolarHolidayDiff(5, 1);
     const theDragonBoatFestival = this.getNextLunarHolidayDiff(5, 5);
-    const childrenDay = this.getNextSolarHolidayDiff(6, 1);
     const midAutumn = this.getNextLunarHolidayDiff(8, 15);
     const nationalDay = this.getNextSolarHolidayDiff(10, 1);
-    const list = [
-      `距离元旦还剩${Math.floor(newYearsDay)}天`,
-      `距离春节还剩${Math.floor(theSpringFestival)}天`,
-      `距离清明节还剩${Math.floor(tombSweepingDay)}天`,
-      `距离劳动节还剩${Math.floor(laborDay)}天`,
-      `距离端午节还剩${Math.floor(theDragonBoatFestival)}天`,
-      `距离儿童节还剩${Math.floor(childrenDay)}天`,
-      `距离中秋节还剩${Math.floor(midAutumn)}天`,
-      `距离国庆节还剩${Math.floor(nationalDay)}天`,
-    ].join('\n');
+    const holidayList = [
+      { name: '元旦', diffDay: newYearsDay },
+      { name: '春节', diffDay: theSpringFestival },
+      { name: '清明节', diffDay: tombSweepingDay },
+      { name: '劳动节', diffDay: laborDay },
+      { name: '端午节', diffDay: theDragonBoatFestival },
+      { name: '中秋节', diffDay: midAutumn },
+      { name: '国庆节', diffDay: nationalDay },
+    ];
+    const list = holidayList
+      .sort((a, b) => a.diffDay - b.diffDay)
+      .map(({ diffDay, name }) => `距离${name}还剩${Math.floor(diffDay)}天`)
+      .join('\n');
     return {
       success: true,
       data: {
