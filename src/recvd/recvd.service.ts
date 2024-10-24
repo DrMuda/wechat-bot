@@ -98,28 +98,30 @@ export class RecvdService {
     return {
       success: true,
       data: {
-        content: [`========== 假期倒计时 ==========`, list].join('\n'),
+        content: [`==== 假期倒计时 ====`, list].join('\n'),
         extra: list,
       },
     };
   }
 
   offWork(): RecvdRes {
-    const toHalfFive = dayjs
-      .duration(dayjs().set('hour', 17).set('minutes', 30).diff(dayjs()))
-      .format('HH:mm');
-    const toSix = dayjs
-      .duration(dayjs().set('hour', 18).set('minutes', 0).diff(dayjs()))
-      .format('HH:mm');
+    const toHalfFive = dayjs().set('hour', 17).set('minutes', 30).diff(dayjs());
+
+    const toSix = dayjs().set('hour', 18).set('minutes', 0).diff(dayjs());
+    dayjs.duration().format('HH:mm');
 
     const list = [
-      `距离五点半下班还剩 ${toHalfFive}`,
-      `距离六点下班还剩 ${toSix}`,
+      `距离五点半下班还剩 ${toHalfFive > 0 ? '' : '-'}${dayjs
+        .duration(Math.abs(toHalfFive))
+        .format('HH:mm')}`,
+      `距离六点下班还剩 ${toSix > 0 ? '' : '-'}${dayjs
+        .duration(Math.abs(toSix))
+        .format('HH:mm')}`,
     ].join('\n');
     return {
       success: true,
       data: {
-        content: ['========== 下班倒计时 ==========', list].join('\n'),
+        content: ['==== 下班倒计时 ====', list].join('\n'),
         extra: list,
       },
     };
@@ -131,7 +133,7 @@ export class RecvdService {
     return {
       success: true,
       data: {
-        content: [`========== 倒计时 ==========`, offWork, holiday].join('\n'),
+        content: [`===== 倒计时 =====`, offWork, holiday].join('\n'),
       },
     };
   }
