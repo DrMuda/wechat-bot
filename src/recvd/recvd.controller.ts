@@ -1,7 +1,6 @@
 import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { RecvdService, RecvdRes } from './recvd.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Keywords } from 'src/config';
 
 @Controller()
 export class RecvdController {

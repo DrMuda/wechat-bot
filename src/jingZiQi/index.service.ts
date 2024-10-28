@@ -32,7 +32,7 @@ export class JingZiQiService {
     const b = this.gameBoard;
     const turn = `轮到 ${this.currentPlayer} 方下棋`;
     const gameBoard = [
-      `# # 1 # 2 # 3 #`,
+      `#  # 1  # 2  # 3  #`,
       `# ╔═╦═╦═╗`,
       `A ║${b[0][0]}║${b[0][1]}║${b[0][2]}║`,
       `# ╠═╬═╬═╣`,
