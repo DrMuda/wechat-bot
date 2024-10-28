@@ -1,12 +1,7 @@
 import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { RecvdService, RecvdRes } from './recvd.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-
-export const Keywords = {
-  Holiday: '假期倒计时',
-  OffWork: '下班倒计时',
-  Countdown: '倒计时',
-};
+import { Keywords } from 'src/config';
 
 @Controller()
 export class RecvdController {
@@ -21,26 +16,6 @@ export class RecvdController {
     if (isMentioned !== '1') return { success: false };
     if (type !== 'text') return { success: false };
 
-    if (content.includes(Keywords.Holiday)) {
-      return this.appService.holiday();
-    }
-    if (content.includes(Keywords.OffWork)) {
-      return this.appService.offWork();
-    }
-    if (content.includes(Keywords.Countdown)) {
-      return this.appService.countdown();
-    }
-
-    return {
-      success: true,
-      data: {
-        content: [
-          '============ 关键字 ============',
-          `1. ${Keywords.Countdown}`,
-          `2. ${Keywords.OffWork}`,
-          `3. ${Keywords.Holiday}`,
-        ].join('\n'),
-      },
-    };
+    return this.appService.router(content)
   }
 }

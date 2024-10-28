@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Keywords } from 'src/config';
+import { JingZiQiService } from 'src/jingZiQi/index.service';
 
 const dayjs = require('dayjs');
 // @ts-ignore
@@ -25,8 +27,35 @@ const msToDay = (ms: number) => {
   return ms / 1000 / 60 / 60 / 24;
 };
 
+const jingZiQiService = new JingZiQiService();
+
 @Injectable()
 export class RecvdService {
+  router(text: string) {
+    if (text.includes(Keywords.Holiday)) {
+      return this.holiday();
+    }
+    if (text.includes(Keywords.OffWork)) {
+      return this.offWork();
+    }
+    if (text.includes(Keywords.Countdown)) {
+      return this.countdown();
+    }
+    const res = jingZiQiService.parseText(text);
+    if (res.success) return res;
+    return {
+      success: true,
+      data: {
+        content: [
+          '============ 关键字 ============',
+          ...Object.values(Keywords).map(
+            (keyword, index) => `${index + 1}. ${keyword}`,
+          ),
+        ].join('\n'),
+      },
+    };
+  }
+
   getNextLunarHolidayDiff(month: number, day: number): number {
     const currentYear = dayjs().year();
     let lunar = Lunar.fromYmd(currentYear, month, day);
