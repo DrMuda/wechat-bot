@@ -49,12 +49,7 @@ export class JingZiQiService {
   }
 
   startGame(): RecvdRes {
-    this.currentPlayer = O;
-    this.gameBoard = [
-      [Null, Null, Null],
-      [Null, Null, Null],
-      [Null, Null, Null],
-    ];
+    this.clearBoard();
     if (this.running === true) {
       return {
         success: true,
@@ -73,6 +68,7 @@ export class JingZiQiService {
   }
 
   stopGame(): RecvdRes {
+    this.clearBoard()
     if (this.running === false) {
       return { success: true, data: { content: '没有进行中的游戏' } };
     }
@@ -81,6 +77,15 @@ export class JingZiQiService {
       success: true,
       data: { content: '已结束井字棋游戏' },
     };
+  }
+
+  clearBoard() {
+    this.currentPlayer = O;
+    this.gameBoard = [
+      [Null, Null, Null],
+      [Null, Null, Null],
+      [Null, Null, Null],
+    ];
   }
 
   turn(coordinate: string): RecvdRes {
@@ -103,7 +108,7 @@ export class JingZiQiService {
     }
     const { success, player } = this.checkSuccess();
     if (success) {
-      this.stopGame();
+      this.clearBoard();
       return {
         success: true,
         data: {
@@ -114,7 +119,7 @@ export class JingZiQiService {
       };
     }
     if (this.checkFullBoard()) {
-      this.stopGame();
+      this.clearBoard();
       return {
         success: true,
         data: {
