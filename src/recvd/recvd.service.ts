@@ -105,6 +105,18 @@ export class RecvdService {
   }
 
   offWork(): RecvdRes {
+    if (dayjs().day() === 0) {
+      return {
+        success: true,
+        data: {
+          content: [
+            '==== 下班倒计时 ====',
+            '不会还有人要上班吧， 不会吧不会吧',
+          ].join('\n'),
+          extra: '',
+        },
+      };
+    }
     const toHalfFive = dayjs().set('hour', 17).set('minutes', 30).diff(dayjs());
 
     const toSix = dayjs().set('hour', 18).set('minutes', 0).diff(dayjs());
