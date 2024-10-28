@@ -15,7 +15,7 @@ export class RecvdController {
     const isRoom = !!body.source?.room?.id;
     const fromUser = body.source?.from?.payload?.name;
 
-    console.log(body.isMentioned, body.source.room.id)
+    console.log(body.isMentioned, body.source)
 
     return this.appService.router({
       type,
