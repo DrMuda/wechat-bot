@@ -11,6 +11,7 @@ export class RecvdController {
   async recvd(@Body() body: any): Promise<RecvdRes> {
     const type = body.type;
     const isMentioned = body.isMentioned === '1';
+    const isMsgFromSelf = body.isMsgFromSelf === '1';
     const content = (body.content as string).replace('@木小博士 ', '').trim();
     let source = {} as Record<string, any>;
     try {
@@ -24,6 +25,7 @@ export class RecvdController {
     return this.appService.router({
       type,
       isMentioned,
+      isMsgFromSelf,
       content,
       isRoom,
       fromUser,

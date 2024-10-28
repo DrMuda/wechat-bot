@@ -19,18 +19,20 @@ export class RecvdService {
   router({
     content,
     fromUser,
+    isMsgFromSelf,
     isMentioned,
     isRoom,
     type,
   }: {
     type: string;
     isMentioned: boolean;
+    isMsgFromSelf: boolean;
     content: string;
     isRoom: boolean;
     fromUser: string;
   }): RecvdRes {
+    if(isMsgFromSelf) return {success: false}
     if (type !== 'text') return { success: false };
-    console.log(isRoom, !isMentioned);
     if (isRoom && !isMentioned) return { success: false };
 
     if (content.includes(Keywords.Holiday)) return holiday();
