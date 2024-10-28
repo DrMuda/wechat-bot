@@ -10,7 +10,7 @@ export class RecvdController {
   @UseInterceptors(FileInterceptor('file'))
   async recvd(@Body() body: any): Promise<RecvdRes> {
     const type = body.type;
-    const isMentioned = body.isMentioned;
+    const isMentioned = body.isMentioned === '1';
     const content = (body.content as string).replace('@木小博士 ', '').trim();
     const isRoom = !!body.source?.room?.id;
     const fromUser = body.source?.from?.payload?.name;
