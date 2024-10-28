@@ -12,6 +12,7 @@ export class RecvdController {
     const type = body.type;
     const isMentioned = body.isMentioned;
     const content = (body.content as string).replace('@木小博士 ', '').trim();
+    console.log(body.source)
     if (isMentioned !== '1') return { success: false };
     if (type !== 'text') return { success: false };
 
