@@ -12,10 +12,15 @@ export class RecvdController {
     const type = body.type;
     const isMentioned = body.isMentioned;
     const content = (body.content as string).replace('@木小博士 ', '').trim();
-    console.log(body.source)
-    if (isMentioned !== '1') return { success: false };
-    if (type !== 'text') return { success: false };
+    const isRoom = !!body.source?.room?.id;
+    const fromUser = body.source?.from?.payload?.name;
 
-    return this.appService.router(content)
+    return this.appService.router({
+      type,
+      isMentioned,
+      content,
+      isRoom,
+      fromUser,
+    });
   }
 }
