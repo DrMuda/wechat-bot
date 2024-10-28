@@ -3,8 +3,8 @@ import { RecvdRes } from 'src/recvd/recvd.service';
 
 enum QiZi {
   O = '〇',
-  X = 'X',
-  Null = '   ',
+  X = 'X ',
+  Null = '    ',
 }
 
 const { O, X, Null } = QiZi;
@@ -33,13 +33,13 @@ export class JingZiQiService {
     const turn = `轮到 ${this.currentPlayer} 方下棋`;
     const gameBoard = [
       `# # 1 # 2 # 3 #`,
-      `# ╔═══╦═══╦═══╗`,
+      `# ╔═╦═╦═╗`,
       `A ║${b[0][0]}║${b[0][1]}║${b[0][2]}║`,
-      `# ╠═══╬═══╬═══╣`,
+      `# ╠═╬═╬═╣`,
       `B ║${b[1][0]}║${b[1][1]}║${b[1][2]}║`,
-      `# ╠═══╬═══╬═══╣`,
+      `# ╠═╬═╬═╣`,
       `C ║${b[2][0]}║${b[2][1]}║${b[2][2]}║`,
-      `# ╚═══╩═══╩═══╝`,
+      `# ╚═╩═╩═╝`,
     ].join('\n');
     return {
       turn,
