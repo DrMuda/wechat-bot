@@ -30,7 +30,7 @@ export class RecvdService {
     fromUser: string;
   }): RecvdRes {
     if (type !== 'text') return { success: false };
-    if (!isRoom && !isMentioned) return { success: false };
+    if (isRoom && !isMentioned) return { success: false };
 
     if (content.includes(Keywords.Holiday)) return holiday();
     if (content.includes(Keywords.OffWork)) return offWork();
