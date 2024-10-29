@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Keywords } from 'src/config';
 import { countdown, holiday, offWork } from 'src/countdown';
 import { JingZiQiService } from 'src/jingZiQi/index.service';
+import { dailySignIn } from 'src/utils';
 
 export interface RecvdRes {
   success: boolean;
@@ -31,9 +32,11 @@ export class RecvdService {
     isRoom: boolean;
     fromUser: string;
   }): RecvdRes {
-    if(isMsgFromSelf) return {success: false}
+    if (isMsgFromSelf) return { success: false };
     if (type !== 'text') return { success: false };
     if (isRoom && !isMentioned) return { success: false };
+
+    dailySignIn([fromUser]);
 
     if (content.includes(Keywords.Holiday)) return holiday();
     if (content.includes(Keywords.OffWork)) return offWork();
@@ -46,7 +49,7 @@ export class RecvdService {
       success: true,
       data: {
         content: [
-          '============ 关键字 ============',
+          '====== 关键字 ======',
           ...Object.values(Keywords).map(
             (keyword, index) => `${index + 1}. ${keyword}`,
           ),
