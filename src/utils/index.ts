@@ -7,10 +7,12 @@ let prevSignInTime: Dayjs = dayjs('2024-01-01');
 
 export const dailySignIn = (users: string[]) => {
   if (prevSignInTime.unix() === dayjs().startOf('date').unix()) return;
-  console.log("dailySignIn")
+  console.log('dailySignIn', users);
   const saveDataMap = getSaveDataMap();
   users.forEach((user) => {
-    if (!saveDataMap[user]) return;
+    if (!saveDataMap[user]) {
+      saveDataMap[user] = { money: 0, prevSignInTime: '2024-01-01 00:00:00' };
+    }
     if (
       dayjs().startOf('date').unix() !==
       dayjs(saveDataMap[user].prevSignInTime).startOf('date').unix()
@@ -20,5 +22,5 @@ export const dailySignIn = (users: string[]) => {
     }
   });
   saveDataMapFn(saveDataMap);
-  prevSignInTime = dayjs().startOf("date")
+  prevSignInTime = dayjs().startOf('date');
 };
