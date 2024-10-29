@@ -1,4 +1,4 @@
-import { SaveData, SaveDataMap } from 'src/config/type';
+import { SaveData, SaveDataMap } from 'src/utils/type';
 import * as fs from 'fs';
 import { saveDataDir } from 'src/config';
 

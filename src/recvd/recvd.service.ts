@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Keywords } from 'src/config';
 import { countdown, holiday, offWork } from 'src/countdown';
 import { JingZiQiService } from 'src/jingZiQi/index.service';
+import { getMoneyRanking } from 'src/money';
 import { dailySignIn } from 'src/utils';
 
 export interface RecvdRes {
@@ -24,23 +25,26 @@ export class RecvdService {
     isMentioned,
     isRoom,
     type,
+    roomUsers
   }: {
     type: string;
     isMentioned: boolean;
     isMsgFromSelf: boolean;
     content: string;
     isRoom: boolean;
-    fromUser: string;
+    fromUser?: string;
+    roomUsers?: string[]
   }): RecvdRes {
     if (isMsgFromSelf) return { success: false };
     if (type !== 'text') return { success: false };
     if (isRoom && !isMentioned) return { success: false };
 
-    dailySignIn([fromUser]);
+    dailySignIn(roomUsers);
 
     if (content.includes(Keywords.Holiday)) return holiday();
     if (content.includes(Keywords.OffWork)) return offWork();
     if (content.includes(Keywords.Countdown)) return countdown();
+    if(content.includes(Keywords.MoneyRanking)) return getMoneyRanking()
 
     const res = jingZiQiService.parseText(content);
     if (res.success) return res;

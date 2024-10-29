@@ -1,23 +1,8 @@
+import { RecvdRes } from 'src/utils/type';
+
 const dayjs = require('dayjs');
 // @ts-ignore
 const { Lunar } = require('lunar-javascript');
-const utc = require('dayjs/plugin/utc');
-const timezone = require('dayjs/plugin/timezone');
-const duration = require('dayjs/plugin/duration');
-dayjs.extend(duration);
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs.tz.setDefault('Asia/Shanghai');
-console.log('时区', dayjs.tz.guess());
-
-export interface RecvdRes {
-  success: boolean;
-  data?: {
-    type?: 'text' | 'fileUrl';
-    content: string;
-    extra?: string;
-  };
-}
 
 const msToDay = (ms: number) => {
   return ms / 1000 / 60 / 60 / 24;

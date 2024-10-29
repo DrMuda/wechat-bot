@@ -5,11 +5,11 @@ const dayjs = require('dayjs') as typeof _dayjs;
 
 let prevSignInTime: Dayjs = dayjs('2024-01-01');
 
-export const dailySignIn = (users: string[]) => {
+export const dailySignIn = (users?: string[]) => {
   if (prevSignInTime.unix() === dayjs().startOf('date').unix()) return;
   console.log('dailySignIn', users);
   const saveDataMap = getSaveDataMap();
-  users.forEach((user) => {
+  users?.forEach((user) => {
     if (!saveDataMap[user]) {
       saveDataMap[user] = { money: 0, prevSignInTime: '2024-01-01 00:00:00' };
     }

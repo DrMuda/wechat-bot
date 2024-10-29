@@ -1,6 +1,7 @@
 import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { RecvdService, RecvdRes } from './recvd.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RecvdRequestBodySource } from 'src/utils/type';
 
 @Controller()
 export class RecvdController {
@@ -13,15 +14,17 @@ export class RecvdController {
     const isMentioned = body.isMentioned === '1';
     const isMsgFromSelf = body.isMsgFromSelf === '1';
     const content = (body.content as string).replace('@木小博士 ', '').trim();
-    let source = {} as Record<string, any>;
+    let source = {} as RecvdRequestBodySource;
     try {
-      console.log(body.source)
       source = JSON.parse(body.source);
     } catch (error) {
       console.error('source 解析失败', error);
     }
     const isRoom = !!source?.room?.id;
     const fromUser = source?.from?.payload?.name;
+    const roomUsers = (source.room?.payload?.memberList
+      ?.map(({ name }) => name)
+      .filter((name) => !!name) || []) as string[];
 
     return this.appService.router({
       type,
@@ -30,6 +33,7 @@ export class RecvdController {
       content,
       isRoom,
       fromUser,
+      roomUsers,
     });
   }
 }
