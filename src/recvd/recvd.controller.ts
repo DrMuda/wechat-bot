@@ -2,6 +2,7 @@ import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { RecvdService, RecvdRes } from './recvd.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RecvdRequestBodySource } from 'src/utils/type';
+import { dailySignIn } from 'src/utils';
 
 @Controller()
 export class RecvdController {
@@ -21,10 +22,24 @@ export class RecvdController {
       console.error('source 解析失败', error);
     }
     const isRoom = !!source?.room?.id;
+    const roomName = source.room?.payload?.topic;
     const fromUser = source?.from?.payload?.name;
     const roomUsers = (source.room?.payload?.memberList
       ?.map(({ name }) => name)
       .filter((name) => !!name) || []) as string[];
+
+    console.log({
+      type,
+      isMentioned,
+      isMsgFromSelf,
+      content,
+      isRoom,
+      roomName,
+      fromUser,
+      roomUsers,
+    });
+
+    dailySignIn(roomUsers);
 
     return this.appService.router({
       type,
@@ -34,6 +49,7 @@ export class RecvdController {
       isRoom,
       fromUser,
       roomUsers,
+      roomName,
     });
   }
 }

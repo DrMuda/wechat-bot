@@ -24,6 +24,7 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.4.5",
+    "axios": "^1.7.7",
     "cross-env": "^7.0.3",
     "dayjs": "^1.11.13",
     "lunar-javascript": "^1.6.12",

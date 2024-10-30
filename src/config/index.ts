@@ -8,4 +8,6 @@ export const Keywords = {
   Countdown: '倒计时',
   StartJingZiQi: '开始井字棋',
   StopJingZiQi: '结束井字棋',
+  StartTwentyOnePoint: '21点',
+  StopTwentyOnePoint: '结束21点',
 };

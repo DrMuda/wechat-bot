@@ -3,7 +3,7 @@ import { Keywords } from 'src/config';
 import { countdown, holiday, offWork } from 'src/countdown';
 import { JingZiQiService } from 'src/jingZiQi/index.service';
 import { getMoneyRanking } from 'src/money';
-import { dailySignIn } from 'src/utils';
+import { TwentyOnePoint } from 'src/twentyOnePoint';
 
 export interface RecvdRes {
   success: boolean;
@@ -15,6 +15,7 @@ export interface RecvdRes {
 }
 
 const jingZiQiService = new JingZiQiService();
+const twentyOnePoint = new TwentyOnePoint();
 
 @Injectable()
 export class RecvdService {
@@ -25,7 +26,8 @@ export class RecvdService {
     isMentioned,
     isRoom,
     type,
-    roomUsers
+    roomUsers,
+    roomName
   }: {
     type: string;
     isMentioned: boolean;
@@ -34,19 +36,20 @@ export class RecvdService {
     isRoom: boolean;
     fromUser?: string;
     roomUsers?: string[]
+    roomName?: string
   }): RecvdRes {
     if (isMsgFromSelf) return { success: false };
     if (type !== 'text') return { success: false };
     if (isRoom && !isMentioned) return { success: false };
-
-    dailySignIn(roomUsers);
 
     if (content.includes(Keywords.Holiday)) return holiday();
     if (content.includes(Keywords.OffWork)) return offWork();
     if (content.includes(Keywords.Countdown)) return countdown();
     if(content.includes(Keywords.MoneyRanking)) return getMoneyRanking()
 
-    const res = jingZiQiService.parseText(content);
+    let res = jingZiQiService.parseText(content);
+    if (res.success) return res;
+    res = twentyOnePoint.router(content, fromUser, roomName)
     if (res.success) return res;
 
     return {

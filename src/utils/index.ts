@@ -1,5 +1,6 @@
 import { getSaveDataMap, saveDataMap as saveDataMapFn } from 'src/saveData';
 import _dayjs, { Dayjs } from 'dayjs';
+import axios from 'axios';
 
 const dayjs = require('dayjs') as typeof _dayjs;
 
@@ -23,4 +24,24 @@ export const dailySignIn = (users?: string[]) => {
   });
   saveDataMapFn(saveDataMap);
   prevSignInTime = dayjs().startOf('date');
+};
+
+export const sendMsgToWx = ({
+  content,
+  isRoom,
+  to,
+}: {
+  to: string;
+  isRoom: boolean;
+  content: string;
+}) => {
+  console.log(content)
+  return axios.post(
+    'http://wxBotWebhook:3001/webhook/msg/v2?token=YpIZOxT77sGR',
+    {
+      to,
+      data: { content },
+      isRoom,
+    },
+  );
 };
