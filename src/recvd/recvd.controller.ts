@@ -28,16 +28,16 @@ export class RecvdController {
       ?.map(({ name }) => name)
       .filter((name) => !!name) || []) as string[];
 
-    console.log({
-      type,
-      isMentioned,
-      isMsgFromSelf,
-      content,
-      isRoom,
-      roomName,
-      fromUser,
-      roomUsers,
-    });
+    // console.log({
+    //   type,
+    //   isMentioned,
+    //   isMsgFromSelf,
+    //   content,
+    //   isRoom,
+    //   roomName,
+    //   fromUser,
+    //   roomUsers,
+    // });
 
     dailySignIn(roomUsers);
 

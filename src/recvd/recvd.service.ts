@@ -19,7 +19,7 @@ const twentyOnePoint = new TwentyOnePoint();
 
 @Injectable()
 export class RecvdService {
-  router({
+  async router({
     content,
     fromUser,
     isMsgFromSelf,
@@ -37,7 +37,7 @@ export class RecvdService {
     fromUser?: string;
     roomUsers?: string[]
     roomName?: string
-  }): RecvdRes {
+  }): Promise<RecvdRes> {
     if (isMsgFromSelf) return { success: false };
     if (type !== 'text') return { success: false };
     if (isRoom && !isMentioned) return { success: false };
@@ -49,7 +49,7 @@ export class RecvdService {
 
     let res = jingZiQiService.parseText(content);
     if (res.success) return res;
-    res = twentyOnePoint.router(content, fromUser, roomName)
+    res = await twentyOnePoint.router(content, fromUser, roomName)
     if (res.success) return res;
 
     return {

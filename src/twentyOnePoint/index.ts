@@ -50,7 +50,11 @@ export class TwentyOnePoint {
   userADealAction?: 'deal' | 'stop' = undefined;
   userBDealAction?: 'deal' | 'stop' = undefined;
 
-  router(text: string, user?: string, roomName?: string): RecvdRes {
+  async router(
+    text: string,
+    user?: string,
+    roomName?: string,
+  ): Promise<RecvdRes> {
     if (!user || !roomName) return { success: false };
     if (
       text.includes(GlobalKeywords.StopTwentyOnePoint) &&
@@ -120,6 +124,12 @@ export class TwentyOnePoint {
           this.userADealAction === 'deal'
         ) {
           this.botAction(roomName);
+          const res = this.turn(this.userADealAction, 'A');
+          await sendMsgToWx({
+            to: roomName,
+            isRoom: true,
+            content: res.data?.content || '',
+          });
         }
       }
 
@@ -201,8 +211,8 @@ export class TwentyOnePoint {
         }
       }
     }
-    console.log(this.userA, this.userAPokerList)
-    console.log(this.userB, this.userBPokerList)
+    console.log(this.userA, this.userAPokerList);
+    console.log(this.userB, this.userBPokerList);
     return {
       success: true,
       data: { content: [...this.checkoutAndRenderHandPoker()].join('\n') },
@@ -273,7 +283,7 @@ export class TwentyOnePoint {
       this.resetPokerList();
       this.runningStep = 'betting';
       return [
-        `双方均已爆牌， 平局`,
+        `🤯双方均已爆牌， 平局`,
         ...handPokerList,
         `可选择调整 "${Keywords.Bet}" 或 "${Keywords.StartDirectly}" 下一局`,
       ];
@@ -290,6 +300,7 @@ export class TwentyOnePoint {
         return [
           `点数${aPoint}, 相同点数，平局`,
           `可选择调整 "${Keywords.Bet}" 或 "${Keywords.StartDirectly}" 下一局`,
+          ...handPokerList
         ];
       }
 
@@ -322,6 +333,7 @@ export class TwentyOnePoint {
       const msgList = [
         `😏${winner}赢了， 点数${winnerPoint}，获得${bet}金币, 余额${winnerMoney}`,
         `😭${loser}输了， 点数${loserPoint}，损失${bet}金币, 余额${loserMoney}`,
+        ...handPokerList,
         `可选择调整 "${Keywords.Bet}" 或 "${Keywords.StartDirectly}" 下一局`,
       ];
       if (winnerPoint === 21) {
@@ -333,7 +345,7 @@ export class TwentyOnePoint {
     if (aIsBust) {
       this.userADealAction = 'stop';
       return [
-        `${this.userA} 爆牌了`,
+        `🤯${this.userA} 爆牌了`,
         ...handPokerList,
         `请 ${this.userB} 决定发牌还是停牌`,
         `💖完美控牌21点赢双倍哦💖`,
@@ -342,7 +354,7 @@ export class TwentyOnePoint {
     if (bIsBust) {
       this.userBDealAction = 'stop';
       return [
-        `${this.userB} 爆牌了`,
+        `🤯${this.userB} 爆牌了`,
         ...handPokerList,
         `请 ${this.userA} 决定发牌还是停牌`,
         `💖完美控牌21点赢双倍哦💖`,
