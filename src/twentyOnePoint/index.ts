@@ -56,10 +56,7 @@ export class TwentyOnePoint {
     roomName?: string,
   ): Promise<RecvdRes> {
     if (!user || !roomName) return { success: false };
-    if (
-      text.includes(GlobalKeywords.StopTwentyOnePoint) &&
-      [this.userA, this.userB].includes(user)
-    ) {
+    if (text.includes(GlobalKeywords.StopTwentyOnePoint)) {
       return this.stopGame();
     }
     if (text.includes(GlobalKeywords.StartTwentyOnePoint)) {
@@ -300,7 +297,7 @@ export class TwentyOnePoint {
         return [
           `点数${aPoint}, 相同点数，平局`,
           `可选择调整 "${Keywords.Bet}" 或 "${Keywords.StartDirectly}" 下一局`,
-          ...handPokerList
+          ...handPokerList,
         ];
       }
 
