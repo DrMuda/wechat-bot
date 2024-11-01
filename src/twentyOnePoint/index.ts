@@ -160,8 +160,8 @@ export class TwentyOnePoint {
         if (this.userA !== botName || this.userADealAction === 'stop') return;
         if (!this.userBDealAction) return;
 
-        const botDecision = await this.botDecision(roomName);
         await waitTime(1000);
+        const botDecision = await this.botDecision(roomName);
         const { success, data } = await this.router(
           botDecision,
           botName,
