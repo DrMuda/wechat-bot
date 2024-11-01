@@ -34,7 +34,7 @@ const Keywords = {
   StartDirectly: '直接开始',
 };
 const botName = '木小博士';
-const maxPokerPoint = 10;
+const maxSinglePokerPoint = 10;
 export class TwentyOnePoint {
   bet: number = 10;
   pokerList: Poker[] = [];
@@ -207,14 +207,15 @@ export class TwentyOnePoint {
       this.userADealAction = 'stop';
       return '停牌';
     }
-    if (aPoint <= 21 - maxPokerPoint) {
+    if (aPoint <= 21 - maxSinglePokerPoint) {
       this.userADealAction = 'deal';
       return '发牌';
     }
-    if (
-      Math.random() <
-      (21 - aPoint - (aPoint < bPoint ? 2 : 0)) / maxPokerPoint
-    ) {
+    // 发牌概率
+    let dealProbability = (21 - aPoint) / maxSinglePokerPoint;
+    // 如果玩家的点数比庄家的高， 那就提高20%概率
+    if (aPoint < bPoint) dealProbability = dealProbability * 1.2;
+    if (Math.random() < dealProbability) {
       this.userADealAction = 'deal';
       return '发牌';
     }
