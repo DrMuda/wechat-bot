@@ -3,7 +3,6 @@ import { getSaveDataByUser } from 'src/saveData';
 import { sendMsgToWx, waitTime } from 'src/utils';
 import { RecvdRes } from 'src/utils/type';
 import { Keywords as GlobalKeywords } from 'src/config';
-import dayjs, { Dayjs } from 'dayjs';
 
 const pokerTypeList = [
   'A',
@@ -35,6 +34,7 @@ const Keywords = {
   StartDirectly: '直接开始',
 };
 const botName = '木小博士';
+const maxPokerPoint = 10;
 export class TwentyOnePoint {
   bet: number = 10;
   pokerList: Poker[] = [];
@@ -205,9 +205,17 @@ export class TwentyOnePoint {
         to: roomName,
         isRoom: true,
       }).catch(() => null);
+      return '停牌';
+    }
+    if (aPoint <= 21 - maxPokerPoint) {
+      await sendMsgToWx({
+        content: `机器人选择了${Keywords.DealCard}`,
+        to: roomName,
+        isRoom: true,
+      });
       return '发牌';
     }
-    if (Math.random() > aPoint / 21) {
+    if (Math.random() < (21 - aPoint) / maxPokerPoint) {
       await sendMsgToWx({
         content: `机器人选择了${Keywords.DealCard}`,
         to: roomName,
@@ -268,7 +276,18 @@ export class TwentyOnePoint {
     return this.getPointNumber(pokerList) > 21;
   }
   getPointNumber(pokerList: Poker[]) {
-    return pokerList.reduce((prev, { point }) => prev + point, 0);
+    let hasPokerA = false;
+    let point = pokerList.reduce((prev, { point, poker }) => {
+      if (poker === 'A') {
+        hasPokerA = true;
+        return prev;
+      }
+      return prev + point;
+    }, 0);
+    if (!hasPokerA) return point;
+    // A 可以当做 1或10点
+    if (point > 11) return point + 1;
+    return point + 10;
   }
 
   waitBet(): RecvdRes {
@@ -289,7 +308,7 @@ export class TwentyOnePoint {
   resetPokerList() {
     this.pokerList = pokerTypeList.map((poker, index) => ({
       poker,
-      point: index + 1,
+      point: Math.min(index + 1, 10),
     }));
     this.pokerList = [
       ...this.pokerList,
