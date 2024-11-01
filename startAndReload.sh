@@ -1,5 +1,5 @@
 OLD_IMAGE_ID=$(docker images -q wechat-bot)
-LABEL=wechat-bot
+LABEL="cache=wechat-bot"
 
 docker build --label $LABEL -t wechat-bot .
 docker stop wechat-bot
