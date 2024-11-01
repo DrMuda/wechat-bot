@@ -278,19 +278,24 @@ export class TwentyOnePoint {
   isBust(pokerList: Poker[]) {
     return this.getPointNumber(pokerList) > 21;
   }
+
   getPointNumber(pokerList: Poker[]) {
-    let hasPokerA = false;
+    let pokerACount = 0;
     let point = pokerList.reduce((prev, { point, poker }) => {
       if (poker === 'A') {
-        hasPokerA = true;
+        pokerACount++;
         return prev;
       }
       return prev + point;
     }, 0);
-    if (!hasPokerA) return point;
-    // A 可以当做 1或11点
-    if (point > 10) return point + 1;
-    return point + 11;
+    for (let i = 0; i < pokerACount; i++) {
+      if (point > 10) {
+        point = point + 1;
+      } else {
+        point = point + 11;
+      }
+    }
+    return point;
   }
 
   waitBet(): RecvdRes {
