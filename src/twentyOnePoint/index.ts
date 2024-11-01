@@ -157,10 +157,9 @@ export class TwentyOnePoint {
       }
 
       setTimeout(async () => {
+        await waitTime(1000);
         if (this.userA !== botName || this.userADealAction === 'stop') return;
         if (!this.userBDealAction) return;
-
-        await waitTime(1000);
         const botDecision = await this.botDecision();
         await sendMsgToWx({
           content: `机器人选择了${botDecision}`,
