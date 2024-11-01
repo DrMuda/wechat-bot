@@ -288,7 +288,7 @@ export class TwentyOnePoint {
       return prev + point;
     }, 0);
     if (!hasPokerA) return point;
-    // A 可以当做 1或10点
+    // A 可以当做 1或11点
     if (point > 10) return point + 1;
     return point + 11;
   }
