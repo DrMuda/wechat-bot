@@ -215,7 +215,10 @@ export class TwentyOnePoint {
       });
       return '发牌';
     }
-    if (Math.random() < (21 - aPoint) / maxPokerPoint) {
+    if (
+      Math.random() <
+      (21 - aPoint - (aPoint < bPoint ? 2 : 0)) / maxPokerPoint
+    ) {
       await sendMsgToWx({
         content: `机器人选择了${Keywords.DealCard}`,
         to: roomName,
