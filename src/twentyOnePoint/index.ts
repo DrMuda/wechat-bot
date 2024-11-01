@@ -161,7 +161,12 @@ export class TwentyOnePoint {
         if (!this.userBDealAction) return;
 
         await waitTime(1000);
-        const botDecision = await this.botDecision(roomName);
+        const botDecision = await this.botDecision();
+        await sendMsgToWx({
+          content: `机器人选择了${botDecision}`,
+          to: roomName,
+          isRoom: true,
+        }).catch(() => null);
         const { success, data } = await this.router(
           botDecision,
           botName,
@@ -196,43 +201,26 @@ export class TwentyOnePoint {
     return { success: false };
   }
 
-  async botDecision(roomName: string): Promise<'发牌' | '停牌'> {
+  async botDecision(): Promise<'发牌' | '停牌'> {
     const aPoint = this.getPointNumber(this.userAPokerList);
-    const bPoint = this.getPointNumber(this.userAPokerList);
+    const bPoint = this.getPointNumber(this.userBPokerList);
     if (bPoint > 21 || aPoint > 21) {
-      await sendMsgToWx({
-        content: `机器人选择了${Keywords.StopCard}`,
-        to: roomName,
-        isRoom: true,
-      }).catch(() => null);
+      this.userADealAction = 'stop';
       return '停牌';
     }
     if (aPoint <= 21 - maxPokerPoint) {
-      await sendMsgToWx({
-        content: `机器人选择了${Keywords.DealCard}`,
-        to: roomName,
-        isRoom: true,
-      });
+      this.userADealAction = 'deal';
       return '发牌';
     }
     if (
       Math.random() <
       (21 - aPoint - (aPoint < bPoint ? 2 : 0)) / maxPokerPoint
     ) {
-      await sendMsgToWx({
-        content: `机器人选择了${Keywords.DealCard}`,
-        to: roomName,
-        isRoom: true,
-      }).catch(() => null);
+      this.userADealAction = 'deal';
       return '发牌';
     }
 
     this.userADealAction = 'stop';
-    await sendMsgToWx({
-      content: `机器人选择了${Keywords.StopCard}`,
-      to: roomName,
-      isRoom: true,
-    }).catch(() => null);
     return '停牌';
   }
 
