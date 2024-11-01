@@ -85,7 +85,10 @@ export class TwentyOnePoint {
     ) {
       return this.stopGame();
     }
-    if (text.includes(GlobalKeywords.StartTwentyOnePointWithBot)) {
+    if (
+      text.includes(GlobalKeywords.StartTwentyOnePointWithBot) &&
+      this.runningStep === 'stop'
+    ) {
       this.userA = botName;
       this.userB = user;
       this.resetPokerList();
