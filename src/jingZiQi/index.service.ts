@@ -68,7 +68,7 @@ export class JingZiQiService {
   }
 
   stopGame(): RecvdRes {
-    this.clearBoard()
+    this.clearBoard();
     if (this.running === false) {
       return { success: true, data: { content: '没有进行中的游戏' } };
     }
@@ -108,7 +108,9 @@ export class JingZiQiService {
     }
     const { success, player } = this.checkSuccess();
     if (success) {
-      this.clearBoard();
+      setTimeout(() => {
+        this.clearBoard();
+      }, 100);
       return {
         success: true,
         data: {
@@ -119,7 +121,9 @@ export class JingZiQiService {
       };
     }
     if (this.checkFullBoard()) {
-      this.clearBoard();
+      setTimeout(() => {
+        this.clearBoard();
+      }, 100);
       return {
         success: true,
         data: {
