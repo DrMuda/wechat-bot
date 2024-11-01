@@ -1,6 +1,6 @@
 import { addMoney } from 'src/money';
 import { getSaveDataByUser } from 'src/saveData';
-import { sendMsgToWx } from 'src/utils';
+import { sendMsgToWx, waitTime } from 'src/utils';
 import { RecvdRes } from 'src/utils/type';
 import { Keywords as GlobalKeywords } from 'src/config';
 
@@ -114,21 +114,14 @@ export class TwentyOnePoint {
         this.userBDealAction = type;
       }
 
-      if (this.userA === botName && user === this.userB) {
-        this.botAction(roomName);
-        while (
-          this.userBDealAction === 'stop' &&
-          this.userADealAction === 'deal'
-        ) {
-          this.botAction(roomName);
-          const res = this.turn(this.userADealAction, 'A');
-          await sendMsgToWx({
-            to: roomName,
-            isRoom: true,
-            content: res.data?.content || '',
-          });
-        }
-      }
+      setTimeout(async () => {
+        if (this.userA !== botName || this.userADealAction === 'stop') return;
+        if (!this.userBDealAction) return;
+
+        const botDecision = await this.botDecision(roomName);
+        await waitTime(1000);
+        this.router(botDecision, botName, roomName);
+      }, 0);
 
       if (this.userADealAction && this.userBDealAction) {
         setTimeout(() => {
@@ -147,34 +140,33 @@ export class TwentyOnePoint {
     return { success: false };
   }
 
-  botAction(roomName: string) {
+  async botDecision(roomName: string): Promise<'发牌' | '停牌'> {
     const aPoint = this.getPointNumber(this.userAPokerList);
     const bPoint = this.getPointNumber(this.userAPokerList);
     if (bPoint > 21 || aPoint > 21) {
-      this.userADealAction = 'stop';
-      sendMsgToWx({
+      await sendMsgToWx({
         content: `机器人选择了${Keywords.StopCard}`,
         to: roomName,
         isRoom: true,
       }).catch(() => null);
-      return;
+      return '发牌';
     }
     if (Math.random() > aPoint / 21) {
-      this.userADealAction = 'deal';
-      sendMsgToWx({
+      await sendMsgToWx({
         content: `机器人选择了${Keywords.DealCard}`,
         to: roomName,
         isRoom: true,
       }).catch(() => null);
-    } else {
-      this.userADealAction = 'stop';
-      sendMsgToWx({
-        content: `机器人选择了${Keywords.StopCard}`,
-        to: roomName,
-        isRoom: true,
-      }).catch(() => null);
+      return '发牌';
     }
-    return;
+
+    this.userADealAction = 'stop';
+    await sendMsgToWx({
+      content: `机器人选择了${Keywords.StopCard}`,
+      to: roomName,
+      isRoom: true,
+    }).catch(() => null);
+    return '停牌';
   }
 
   turn(type: 'deal' | 'stop', user: 'A' | 'B'): RecvdRes {

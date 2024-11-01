@@ -35,7 +35,7 @@ export const sendMsgToWx = ({
   isRoom: boolean;
   content: string;
 }) => {
-  console.log(content)
+  console.log(content);
   return axios.post(
     'http://wxBotWebhook:3001/webhook/msg/v2?token=YpIZOxT77sGR',
     {
@@ -44,4 +44,8 @@ export const sendMsgToWx = ({
       isRoom,
     },
   );
+};
+
+export const waitTime = async (timeout: number) => {
+  return new Promise((r) => setTimeout(r, timeout));
 };
