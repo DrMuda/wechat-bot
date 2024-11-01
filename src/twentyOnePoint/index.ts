@@ -3,6 +3,7 @@ import { getSaveDataByUser } from 'src/saveData';
 import { sendMsgToWx, waitTime } from 'src/utils';
 import { RecvdRes } from 'src/utils/type';
 import { Keywords as GlobalKeywords } from 'src/config';
+import dayjs, { Dayjs } from 'dayjs';
 
 const pokerTypeList = [
   'A',
@@ -50,16 +51,49 @@ export class TwentyOnePoint {
   userADealAction?: 'deal' | 'stop' = undefined;
   userBDealAction?: 'deal' | 'stop' = undefined;
 
+  timeOutTimer: NodeJS.Timeout | null = null;
+
+  activeTimeOut(roomName: string) {
+    if (this.timeOutTimer) {
+      clearTimeout(this.timeOutTimer);
+    }
+    this.timeOutTimer = setTimeout(
+      () => {
+        this.runningStep = 'stop';
+        this.resetPokerList();
+        this.userA = undefined;
+        this.userB = undefined;
+        sendMsgToWx({
+          to: roomName,
+          isRoom: true,
+          content: '21点游戏已超时结束',
+        });
+      },
+      2 * 60 * 1000,
+    );
+  }
+
   async router(
     text: string,
     user?: string,
     roomName?: string,
   ): Promise<RecvdRes> {
     if (!user || !roomName) return { success: false };
-    if (text.includes(GlobalKeywords.StopTwentyOnePoint)) {
+    if (
+      text.includes(GlobalKeywords.StopTwentyOnePoint) &&
+      [this.userA, this.userB].includes(user)
+    ) {
       return this.stopGame();
     }
+    if (text.includes(GlobalKeywords.StartTwentyOnePointWithBot)) {
+      this.userA = botName;
+      this.userB = user;
+      this.resetPokerList();
+      this.runningStep = 'betting';
+      return this.waitBet();
+    }
     if (text.includes(GlobalKeywords.StartTwentyOnePoint)) {
+      this.activeTimeOut(roomName);
       return this.startGame(user);
     }
     if (this.runningStep === 'waitUserB') {
@@ -67,10 +101,12 @@ export class TwentyOnePoint {
         this.userB = this.userA;
         this.userA = botName;
         this.resetPokerList();
+        this.activeTimeOut(roomName);
         return this.waitBet();
       } else if (text.includes(Keywords.JoinGame) && user !== this.userA) {
         this.userB = user;
         this.resetPokerList();
+        this.activeTimeOut(roomName);
         return this.waitBet();
       }
     }
@@ -85,12 +121,14 @@ export class TwentyOnePoint {
         this.resetPokerList();
 
         this.turn('deal', 'A');
+        this.activeTimeOut(roomName);
         return this.turn('deal', 'B');
       } else if (text.includes(Keywords.StartDirectly)) {
         this.runningStep = 'turning';
         this.resetPokerList();
 
         this.turn('deal', 'A');
+        this.activeTimeOut(roomName);
         return this.turn('deal', 'B');
       }
     }
@@ -126,6 +164,7 @@ export class TwentyOnePoint {
           roomName,
         );
         if (success) {
+          this.activeTimeOut(roomName);
           sendMsgToWx({
             content: data?.content || '',
             isRoom: true,
@@ -141,9 +180,11 @@ export class TwentyOnePoint {
           this.userBDealAction =
             this.userBDealAction === 'stop' ? 'stop' : undefined;
         }, 0);
+        this.activeTimeOut(roomName);
         this.turn(this.userADealAction, 'A');
         return this.turn(this.userBDealAction, 'B');
       } else {
+        this.activeTimeOut(roomName);
         return { success: true, data: { content: `等待另一方决策...` } };
       }
     }

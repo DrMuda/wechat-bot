@@ -9,5 +9,6 @@ export const Keywords = {
   StartJingZiQi: '开始井字棋',
   StopJingZiQi: '结束井字棋',
   StartTwentyOnePoint: '21点',
+  StartTwentyOnePointWithBot: '和机器人玩21点',
   StopTwentyOnePoint: '结束21点',
 };
