@@ -90,6 +90,7 @@ export class TwentyOnePoint {
       this.userB = user;
       this.resetPokerList();
       this.runningStep = 'betting';
+      this.activeTimeOut(roomName);
       return this.waitBet();
     }
     if (text.includes(GlobalKeywords.StartTwentyOnePoint)) {
