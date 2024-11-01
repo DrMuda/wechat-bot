@@ -120,7 +120,18 @@ export class TwentyOnePoint {
 
         const botDecision = await this.botDecision(roomName);
         await waitTime(1000);
-        this.router(botDecision, botName, roomName);
+        const { success, data } = await this.router(
+          botDecision,
+          botName,
+          roomName,
+        );
+        if (success) {
+          sendMsgToWx({
+            content: data?.content || '',
+            isRoom: true,
+            to: roomName,
+          });
+        }
       }, 0);
 
       if (this.userADealAction && this.userBDealAction) {
