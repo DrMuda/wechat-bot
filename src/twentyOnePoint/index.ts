@@ -289,8 +289,8 @@ export class TwentyOnePoint {
     }, 0);
     if (!hasPokerA) return point;
     // A 可以当做 1或10点
-    if (point > 11) return point + 1;
-    return point + 10;
+    if (point > 10) return point + 1;
+    return point + 11;
   }
 
   waitBet(): RecvdRes {
