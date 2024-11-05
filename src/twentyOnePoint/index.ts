@@ -116,9 +116,23 @@ export class TwentyOnePoint {
     if (this.runningStep === 'betting' && user === this.userB) {
       const regExp = new RegExp(`${Keywords.Bet}[1-9][0-9]{0,6}`);
       const match = text.match(regExp);
+      const aMoney = getSaveDataByUser(this.userA!).money;
+      const bMoney = getSaveDataByUser(this.userB!).money;
       if (match) {
         const bet = Number(match[0].replace(Keywords.Bet, ''));
         console.log(bet);
+        if (bet > aMoney) {
+          return {
+            success: true,
+            data: { content: `😩${this.userA}金币不足` },
+          };
+        }
+        if (bet > bMoney) {
+          return {
+            success: true,
+            data: { content: `😩${this.userB}金币不足` },
+          };
+        }
         this.bet = bet;
         await sendMsgToWx({
           content: `已调整赌注为${bet}`,
@@ -132,6 +146,18 @@ export class TwentyOnePoint {
         this.activeTimeOut(roomName);
         return this.turn('deal', 'B');
       } else if (text.includes(Keywords.StartDirectly)) {
+        if (this.bet > aMoney) {
+          return {
+            success: true,
+            data: { content: `😩${this.userA}金币不足` },
+          };
+        }
+        if (this.bet > bMoney) {
+          return {
+            success: true,
+            data: { content: `😩${this.userB}金币不足` },
+          };
+        }
         this.runningStep = 'turning';
         this.resetPokerList();
 
