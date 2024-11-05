@@ -61,7 +61,7 @@ export class TwentyOnePoint {
     this.timeOutTimer = setTimeout(
       () => {
         this.resetPokerList();
-        this.stopGame();
+        this.stopGame(roomName);
         sendMsgToWx({
           to: roomName,
           isRoom: true,
@@ -82,7 +82,7 @@ export class TwentyOnePoint {
       text.includes(GlobalKeywords.StopTwentyOnePoint) &&
       [this.userA, this.userB].includes(user)
     ) {
-      return this.stopGame();
+      return this.stopGame(roomName);
     }
     if (
       text.includes(GlobalKeywords.StartTwentyOnePointWithBot) &&
@@ -503,7 +503,21 @@ export class TwentyOnePoint {
     };
   }
 
-  stopGame(): RecvdRes {
+  async stopGame(roomName: string): Promise<RecvdRes> {
+    // 防止有人玩不起掀桌
+    if (this.runningStep === 'turning') {
+      this.userADealAction = 'stop';
+      this.userBDealAction = 'stop';
+      const { data } = this.turn([
+        { type: 'stop', user: 'A' },
+        { type: 'stop', user: 'B' },
+      ]);
+      await sendMsgToWx({
+        content: data?.content || '',
+        isRoom: true,
+        to: roomName,
+      });
+    }
     this.runningStep = 'stop';
     this.resetPokerList();
     this.bet = 10;
