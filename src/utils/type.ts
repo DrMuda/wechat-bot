@@ -1,6 +1,13 @@
 export interface SaveData {
   money: number;
   prevSignInTime: string;
+  luck: number, 
+  /** 战斗力 */
+  battleStrength: number,
+  /** 议价能力 */
+  bargainingPower: number,
+  /** 盗窃能力 */
+  thieverySkills: number,
 }
 
 export interface SaveDataMap {

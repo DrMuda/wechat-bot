@@ -1,6 +1,6 @@
 import { SaveData, SaveDataMap } from 'src/utils/type';
 import * as fs from 'fs';
-import { saveDataDir } from 'src/config';
+import { DefaultMakeMoneyAttribute, saveDataDir } from 'src/config';
 
 const dayjs = require('dayjs');
 
@@ -43,11 +43,14 @@ export const saveDataByUser = (data: SaveData, user: string) => {
 export const getSaveDataByUser = (user: string) => {
   const dataMap = getSaveDataMap();
 
-  if (!dataMap[user]) {
-    dataMap[user] = {
-      money: 0,
-      prevSignInTime: dayjs().format('YYYY-MM-DD hh:mm:ss'),
-    };
-  }
+  dataMap[user] = {
+    money: 0,
+    prevSignInTime: dayjs().format('YYYY-MM-DD hh:mm:ss'),
+    bargainingPower: DefaultMakeMoneyAttribute,
+    battleStrength: DefaultMakeMoneyAttribute,
+    luck: DefaultMakeMoneyAttribute,
+    thieverySkills: DefaultMakeMoneyAttribute,
+    ...dataMap[user],
+  };
   return dataMap[user];
 };

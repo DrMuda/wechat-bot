@@ -4,6 +4,8 @@ import { countdown, holiday, offWork } from 'src/countdown';
 import { JingZiQiService } from 'src/jingZiQi/index.service';
 import { getMoneyRanking } from 'src/money';
 import { TwentyOnePoint } from 'src/twentyOnePoint';
+import { getMyInfo } from 'src/utils';
+import { parseText as makeMoneyParseText } from 'src/makeMoney';
 
 export interface RecvdRes {
   success: boolean;
@@ -27,7 +29,7 @@ export class RecvdService {
     isRoom,
     type,
     roomUsers,
-    roomName
+    roomName,
   }: {
     type: string;
     isMentioned: boolean;
@@ -35,8 +37,8 @@ export class RecvdService {
     content: string;
     isRoom: boolean;
     fromUser?: string;
-    roomUsers?: string[]
-    roomName?: string
+    roomUsers?: string[];
+    roomName?: string;
   }): Promise<RecvdRes> {
     if (isMsgFromSelf) return { success: false };
     if (type !== 'text') return { success: false };
@@ -45,11 +47,18 @@ export class RecvdService {
     if (content.includes(Keywords.Holiday)) return holiday();
     if (content.includes(Keywords.OffWork)) return offWork();
     if (content.includes(Keywords.Countdown)) return countdown();
-    if(content.includes(Keywords.MoneyRanking)) return getMoneyRanking()
+    if (content.includes(Keywords.MoneyRanking)) return getMoneyRanking();
+    if (content.includes(Keywords.MyInfo) && fromUser) {
+      return { success: true, data: { content: getMyInfo(fromUser) } };
+    }
 
     let res = jingZiQiService.parseText(content);
     if (res.success) return res;
-    res = await twentyOnePoint.router(content, fromUser, roomName)
+    res = await twentyOnePoint.router(content, fromUser, roomName);
+    if (res.success) return res;
+    if (fromUser) {
+      res = makeMoneyParseText(content, fromUser);
+    }
     if (res.success) return res;
 
     return {
