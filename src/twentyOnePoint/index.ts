@@ -59,10 +59,8 @@ export class TwentyOnePoint {
     }
     this.timeOutTimer = setTimeout(
       () => {
-        this.runningStep = 'stop';
         this.resetPokerList();
-        this.userA = undefined;
-        this.userB = undefined;
+        this.stopGame();
         sendMsgToWx({
           to: roomName,
           isRoom: true,
@@ -459,6 +457,10 @@ export class TwentyOnePoint {
 
   stopGame(): RecvdRes {
     this.runningStep = 'stop';
+    this.resetPokerList()
+    this.bet = 10
+    this.userA = undefined;
+    this.userB = undefined;
     return {
       success: true,
       data: {
