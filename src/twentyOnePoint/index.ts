@@ -142,9 +142,11 @@ export class TwentyOnePoint {
 
         this.runningStep = 'turning';
         this.resetPokerList();
-        this.turn('deal', 'A');
         this.activeTimeOut(roomName);
-        return this.turn('deal', 'B');
+        return this.turn([
+          { type: 'deal', user: 'A' },
+          { type: 'deal', user: 'B' },
+        ]);
       } else if (text.includes(Keywords.StartDirectly)) {
         if (this.bet > aMoney) {
           return {
@@ -161,9 +163,11 @@ export class TwentyOnePoint {
         this.runningStep = 'turning';
         this.resetPokerList();
 
-        this.turn('deal', 'A');
         this.activeTimeOut(roomName);
-        return this.turn('deal', 'B');
+        return this.turn([
+          { type: 'deal', user: 'A' },
+          { type: 'deal', user: 'B' },
+        ]);
       }
     }
     if (
@@ -219,8 +223,10 @@ export class TwentyOnePoint {
             this.userBDealAction === 'stop' ? 'stop' : undefined;
         }, 0);
         this.activeTimeOut(roomName);
-        this.turn(this.userADealAction, 'A');
-        return this.turn(this.userBDealAction, 'B');
+        return this.turn([
+          { type: this.userADealAction, user: 'A' },
+          { type: this.userBDealAction, user: 'B' },
+        ]);
       } else {
         this.activeTimeOut(roomName);
         return { success: true, data: { content: `等待另一方决策...` } };
@@ -254,37 +260,39 @@ export class TwentyOnePoint {
     return '停牌';
   }
 
-  turn(type: 'deal' | 'stop', user: 'A' | 'B'): RecvdRes {
-    console.log(type, user);
-    switch (type) {
-      case 'deal': {
-        switch (user) {
-          case 'A': {
-            const poker = this.pokerList.pop();
-            poker && this.userAPokerList.push(poker);
-            break;
+  turn(actionList: { type: 'deal' | 'stop'; user: 'A' | 'B' }[]): RecvdRes {
+    console.log(actionList);
+    actionList.forEach(({ type, user }) => {
+      switch (type) {
+        case 'deal': {
+          switch (user) {
+            case 'A': {
+              const poker = this.pokerList.pop();
+              poker && this.userAPokerList.push(poker);
+              break;
+            }
+            case 'B': {
+              const poker = this.pokerList.pop();
+              poker && this.userBPokerList.push(poker);
+              break;
+            }
           }
-          case 'B': {
-            const poker = this.pokerList.pop();
-            poker && this.userBPokerList.push(poker);
-            break;
+          break;
+        }
+        case 'stop': {
+          switch (user) {
+            case 'A': {
+              this.userAStop = true;
+              break;
+            }
+            case 'B': {
+              this.userBStop = true;
+              break;
+            }
           }
         }
-        break;
       }
-      case 'stop': {
-        switch (user) {
-          case 'A': {
-            this.userAStop = true;
-            break;
-          }
-          case 'B': {
-            this.userBStop = true;
-            break;
-          }
-        }
-      }
-    }
+    });
     console.log(this.userA, this.userAPokerList);
     console.log(this.userB, this.userBPokerList);
     return {
