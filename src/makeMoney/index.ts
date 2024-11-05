@@ -1,6 +1,6 @@
 import { Keywords, MaxMakeMoneyAttribute, saveDataLabelMap } from 'src/config';
 import { addMoney } from 'src/money';
-import { getSaveDataByUser } from 'src/saveData';
+import { getSaveDataByUser, saveDataByUser } from 'src/saveData';
 import { getNowFortune, random } from 'src/utils';
 import { RecvdRes, SaveData } from 'src/utils/type';
 
@@ -33,7 +33,7 @@ const baseMakeMoney = (
   );
   // 如果赚钱成功， 理应得到的钱
   const shouldGetMoney = Math.round(
-    mainAttributeProbability * MaxMakeMoneyAmount * 1 + random(-0.2, 0.2),
+    mainAttributeProbability * MaxMakeMoneyAmount * (1 + random(-0.3, 0.3)),
   );
   const levelUp = Math.random() < 1 / mainAttribute;
 
@@ -43,8 +43,7 @@ const baseMakeMoney = (
   if (Math.random() < luckProbability) {
     return { success: false, money: 0, levelUp };
   }
-  // 失败了损失理应获得的一半钱
-  return { success: false, money: -shouldGetMoney * 0.5, levelUp };
+  return { success: false, money: -shouldGetMoney, levelUp };
 };
 
 export const makeMoney = (
@@ -111,6 +110,7 @@ export const parseText = (text: string, user: string): RecvdRes => {
         `${saveDataLabelMap[mainAttributeFieldName]}提升, 当前${saveDataLabelMap[mainAttributeFieldName]}: ${saveData[mainAttributeFieldName]}`,
       );
     }
+    saveDataByUser(saveData, user);
     return {
       success: true,
       data: { content: [...content, ...extra].join('\n') },
