@@ -35,6 +35,7 @@ const Keywords = {
 };
 const botName = '木小博士';
 const maxSinglePokerPoint = 10;
+const maxBet = 9999999;
 export class TwentyOnePoint {
   bet: number = 10;
   pokerList: Poker[] = [];
@@ -113,15 +114,20 @@ export class TwentyOnePoint {
       }
     }
     if (this.runningStep === 'betting' && user === this.userB) {
-      const regExp = new RegExp(`${Keywords.Bet}[1-9][0-9]*`);
+      const regExp = new RegExp(`${Keywords.Bet}[1-9][0-9]{0,6}`);
       const match = text.match(regExp);
       if (match) {
         const bet = Number(match[0].replace(Keywords.Bet, ''));
         console.log(bet);
         this.bet = bet;
+        await sendMsgToWx({
+          content: `已调整赌注为${bet}`,
+          isRoom: true,
+          to: roomName,
+        });
+
         this.runningStep = 'turning';
         this.resetPokerList();
-
         this.turn('deal', 'A');
         this.activeTimeOut(roomName);
         return this.turn('deal', 'B');
@@ -292,7 +298,7 @@ export class TwentyOnePoint {
         content: [
           `庄家${this.userA}， 玩家${this.userB}`,
           `当前赌注 ${this.bet}, 请 ${this.userB} 决定是否调整赌注`,
-          `调整赌注回复示例：${Keywords.Bet}100`,
+          `调整赌注回复示例：${Keywords.Bet}100， 上限${maxBet}`,
           `也可"${Keywords.StartDirectly}"`,
         ].join('\n'),
       },
@@ -457,8 +463,8 @@ export class TwentyOnePoint {
 
   stopGame(): RecvdRes {
     this.runningStep = 'stop';
-    this.resetPokerList()
-    this.bet = 10
+    this.resetPokerList();
+    this.bet = 10;
     this.userA = undefined;
     this.userB = undefined;
     return {
