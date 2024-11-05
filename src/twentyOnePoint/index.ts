@@ -247,6 +247,14 @@ export class TwentyOnePoint {
       this.userADealAction = 'deal';
       return '发牌';
     }
+    if (this.userBStop && aPoint < bPoint) {
+      this.userADealAction = 'deal';
+      return '发牌';
+    }
+    if (this.userBStop && aPoint > bPoint) {
+      this.userADealAction = 'stop';
+      return '停牌';
+    }
     // 发牌概率
     let dealProbability = (21 - aPoint) / maxSinglePokerPoint;
     // 如果玩家的点数比庄家的高， 那就提高20%概率
