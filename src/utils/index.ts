@@ -25,6 +25,7 @@ export const dailySignIn = (users?: string[]) => {
         battleStrength: DefaultMakeMoneyAttribute,
         luck: DefaultMakeMoneyAttribute,
         thieverySkills: DefaultMakeMoneyAttribute,
+        prevMakeMoney: null
       };
     }
     if (

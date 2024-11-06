@@ -50,6 +50,7 @@ export const getSaveDataByUser = (user: string) => {
     battleStrength: DefaultMakeMoneyAttribute,
     luck: DefaultMakeMoneyAttribute,
     thieverySkills: DefaultMakeMoneyAttribute,
+    prevMakeMoney: null,
     ...dataMap[user],
   };
   return dataMap[user];

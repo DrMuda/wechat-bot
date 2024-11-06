@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { Keywords, MaxMakeMoneyAttribute, saveDataLabelMap } from 'src/config';
 import { addMoney } from 'src/money';
 import { getSaveDataByUser, saveDataByUser } from 'src/saveData';
@@ -14,6 +15,8 @@ interface MakeMoneyResult {
   money: number;
   levelUp: boolean;
   extra?: string[];
+  // cd中
+  inCd?: boolean;
 }
 
 const MaxMakeMoneyAmount = 100000;
@@ -52,6 +55,12 @@ export const makeMoney = (
 ): MakeMoneyResult => {
   const saveData = getSaveDataByUser(user);
   if (!saveData) return { success: false, money: 0, levelUp: false };
+  if (
+    saveData.prevMakeMoney &&
+    dayjs().unix() - dayjs(saveData.prevMakeMoney).unix() < 1 * 60
+  ) {
+    return { success: false, money: 0, levelUp: false, inCd: true };
+  }
 
   const noMoneyRes = {
     levelUp: false,
@@ -93,23 +102,36 @@ export const parseText = (text: string, user: string): RecvdRes => {
     mainAttributeFieldName = 'thieverySkills';
   }
   if (makeMoneyResult) {
-    const { levelUp, money, success, extra = [] } = makeMoneyResult;
+    const {
+      levelUp,
+      money,
+      success,
+      extra = [],
+      inCd = false,
+    } = makeMoneyResult;
     addMoney(money, user);
     const saveData = getSaveDataByUser(user);
-    if (levelUp) {
-      saveData[mainAttributeFieldName] = saveData[mainAttributeFieldName] + 1;
-    }
     const content: string[] = [];
+    
     if (success) {
       content.push(`${action}成功, 获得${money}金币, 余额${saveData.money}`);
     } else {
       content.push(`${action}失败, 损失${money}金币, 余额${saveData.money}`);
     }
+    
     if (levelUp) {
+      saveData[mainAttributeFieldName] = saveData[mainAttributeFieldName] + 1;
       content.push(
         `${saveDataLabelMap[mainAttributeFieldName]}提升, 当前${saveDataLabelMap[mainAttributeFieldName]}: ${saveData[mainAttributeFieldName]}`,
       );
     }
+    
+    if (inCd) {
+      content.push(`冷却中...`);
+    } else {
+      saveData.prevMakeMoney = dayjs().format('YYYY-MM-DD HH:mm:ss');
+    }
+
     saveDataByUser(saveData, user);
     return {
       success: true,

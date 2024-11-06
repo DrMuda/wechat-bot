@@ -1,13 +1,14 @@
 export interface SaveData {
   money: number;
   prevSignInTime: string;
-  luck: number, 
+  luck: number;
   /** 战斗力 */
-  battleStrength: number,
+  battleStrength: number;
   /** 议价能力 */
-  bargainingPower: number,
+  bargainingPower: number;
   /** 盗窃能力 */
-  thieverySkills: number,
+  thieverySkills: number;
+  prevMakeMoney: string | null;
 }
 
 export interface SaveDataMap {

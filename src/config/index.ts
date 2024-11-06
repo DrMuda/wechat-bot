@@ -30,4 +30,5 @@ export const saveDataLabelMap: Record<keyof SaveData, string> = {
   money: '金币',
   prevSignInTime: '上次签到时间',
   thieverySkills: '盗窃能力',
+  prevMakeMoney: '上次赚钱时间',
 };
