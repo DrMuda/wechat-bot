@@ -262,6 +262,8 @@ export class TwentyOnePoint {
     }
     // 发牌概率
     let dealProbability = (21 - aPoint) / maxSinglePokerPoint;
+    // 令概率在接近21点时急速下滑
+    dealProbability = Math.pow(dealProbability, 2);
     // 如果玩家的点数比庄家的高， 那就提高20%概率
     if (aPoint < bPoint) dealProbability = dealProbability * 1.2;
     if (Math.random() < dealProbability) {
