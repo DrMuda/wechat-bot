@@ -25,7 +25,7 @@ export const dailySignIn = (users?: string[]) => {
         battleStrength: DefaultMakeMoneyAttribute,
         luck: DefaultMakeMoneyAttribute,
         thieverySkills: DefaultMakeMoneyAttribute,
-        prevMakeMoney: null
+        prevMakeMoney: null,
       };
     }
     if (
@@ -72,7 +72,7 @@ export const random = (start: number, end: number, seed?: number) => {
         .slice(6),
   );
 
-  return random * (end - start) - start;
+  return random * (end - start) + start;
 };
 
 export const getMyInfo = (user: string): string => {
