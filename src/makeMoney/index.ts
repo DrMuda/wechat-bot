@@ -1,9 +1,10 @@
-import dayjs from 'dayjs';
 import { Keywords, MaxMakeMoneyAttribute, saveDataLabelMap } from 'src/config';
 import { addMoney } from 'src/money';
 import { getSaveDataByUser, saveDataByUser } from 'src/saveData';
 import { getNowFortune, random } from 'src/utils';
 import { RecvdRes, SaveData } from 'src/utils/type';
+
+const dayjs = require('dayjs');
 
 enum EMakeMoneyAction {
   Adventure,
