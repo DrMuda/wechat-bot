@@ -29,7 +29,7 @@ const baseMakeMoney = (
   const luckProbability = luck / MaxMakeMoneyAttribute + fortune;
   const successProbability = Math.min(
     1,
-    mainAttributeProbability + luckProbability,
+    1 - (1 - mainAttributeProbability) * (1 - luckProbability),
   );
   // 如果赚钱成功， 理应得到的钱
   const shouldGetMoney = Math.round(
@@ -40,7 +40,7 @@ const baseMakeMoney = (
   if (Math.random() < successProbability) {
     return { success: true, money: shouldGetMoney, levelUp };
   }
-  if (Math.random() < luckProbability) {
+  if (Math.random() < luckProbability / 2) {
     return { success: false, money: 0, levelUp };
   }
   return { success: false, money: -shouldGetMoney, levelUp };
