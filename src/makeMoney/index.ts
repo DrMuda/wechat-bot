@@ -20,8 +20,6 @@ interface MakeMoneyResult {
   inCd?: boolean;
 }
 
-const MaxMakeMoneyAmount = 100000;
-
 const { Adventure, ItinerantMerchant, Thievery } = EMakeMoneyAction;
 const baseMakeMoney = (
   user: string,
@@ -42,7 +40,7 @@ const baseMakeMoney = (
   );
   // 如果赚钱成功， 理应得到的钱
   const shouldGetMoney = Math.round(
-    mainAttributeProbability * MaxMakeMoneyAmount * (1 + random(-0.3, 0.3)),
+    mainAttribute * 1000 * (1 + random(-0.3, 0.3)),
   );
   const levelUp = Math.random() < 1 / mainAttribute;
 
