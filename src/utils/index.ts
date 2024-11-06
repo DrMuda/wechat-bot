@@ -79,19 +79,19 @@ export const getMyInfo = (user: string): string => {
   const saveData = getSaveDataByUser(user);
   let fortuneLabel = '大吉';
   const fortune = getNowFortune(user);
-  if (fortune > 0) {
+  if (fortune > -0.4) {
     fortuneLabel = '大凶';
   }
-  if (fortune > 0.2) {
+  if (fortune > -0.2) {
     fortuneLabel = '小凶';
   }
-  if (fortune > 0.4) {
+  if (fortune > 0) {
     fortuneLabel = '吉';
   }
-  if (fortune > 0.6) {
+  if (fortune > 0.2) {
     fortuneLabel = '小吉';
   }
-  if (fortune > 0.8) {
+  if (fortune > 0.4) {
     fortuneLabel = '大吉';
   }
   return [
@@ -110,5 +110,5 @@ export const getNowFortune = (user: string): number => {
     dayjs().month() +
     dayjs().date() +
     dayjs().hour();
-  return random(0, 1, seed);
+  return random(-0.4, 0.6, seed);
 };

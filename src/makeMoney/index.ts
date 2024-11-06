@@ -28,11 +28,16 @@ const baseMakeMoney = (
   mainAttribute: number,
 ): MakeMoneyResult => {
   const fortune = getNowFortune(user);
-  const mainAttributeProbability = mainAttribute / MaxMakeMoneyAttribute;
-  const luckProbability = luck / MaxMakeMoneyAttribute + fortune;
+  const baseProbability = 0.5;
+  const mainAttributeProbability =
+    (mainAttribute / MaxMakeMoneyAttribute) * 0.3;
+  const luckProbability = (luck / MaxMakeMoneyAttribute) * 0.3 + fortune;
   const successProbability = Math.min(
     1,
-    1 - (1 - mainAttributeProbability) * (1 - luckProbability),
+    1 -
+      (1 - baseProbability) *
+        (1 - mainAttributeProbability) *
+        (1 - luckProbability),
   );
   // 如果赚钱成功， 理应得到的钱
   const shouldGetMoney = Math.round(
@@ -112,20 +117,20 @@ export const parseText = (text: string, user: string): RecvdRes => {
     addMoney(money, user);
     const saveData = getSaveDataByUser(user);
     const content: string[] = [];
-    
+
     if (success) {
       content.push(`${action}成功, 获得${money}金币, 余额${saveData.money}`);
     } else {
       content.push(`${action}失败, 损失${money}金币, 余额${saveData.money}`);
     }
-    
+
     if (levelUp) {
       saveData[mainAttributeFieldName] = saveData[mainAttributeFieldName] + 1;
       content.push(
         `${saveDataLabelMap[mainAttributeFieldName]}提升, 当前${saveDataLabelMap[mainAttributeFieldName]}: ${saveData[mainAttributeFieldName]}`,
       );
     }
-    
+
     if (inCd) {
       content.push(`冷却中...`);
     } else {
