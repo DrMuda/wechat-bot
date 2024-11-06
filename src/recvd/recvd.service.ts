@@ -6,6 +6,7 @@ import { getMoneyRanking } from 'src/money';
 import { TwentyOnePoint } from 'src/twentyOnePoint';
 import { getMyInfo } from 'src/utils';
 import { parseText as makeMoneyParseText } from 'src/makeMoney';
+import { parseText as upgradeParseText } from 'src/upgrade';
 
 export interface RecvdRes {
   success: boolean;
@@ -54,10 +55,17 @@ export class RecvdService {
 
     let res = jingZiQiService.parseText(content);
     if (res.success) return res;
+
     res = await twentyOnePoint.router(content, fromUser, roomName);
     if (res.success) return res;
+
     if (fromUser) {
       res = makeMoneyParseText(content, fromUser);
+    }
+    if (res.success) return res;
+
+    if (fromUser) {
+      res = upgradeParseText(content, fromUser);
     }
     if (res.success) return res;
 
