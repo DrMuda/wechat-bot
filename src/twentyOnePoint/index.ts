@@ -528,6 +528,7 @@ export class TwentyOnePoint {
     this.bet = 10;
     this.userA = undefined;
     this.userB = undefined;
+    this.timeOutTimer && clearTimeout(this.timeOutTimer);
     return {
       success: true,
       data: {
