@@ -325,15 +325,13 @@ export class TwentyOnePoint {
     let point = pokerList.reduce((prev, { point, poker }) => {
       if (poker === 'A') {
         pokerACount++;
-        return prev;
+        return prev + 11;
       }
       return prev + point;
     }, 0);
     for (let i = 0; i < pokerACount; i++) {
-      if (point > 10) {
-        point = point + 1;
-      } else {
-        point = point + 11;
+      if (point > 21) {
+        point = point - 10;
       }
     }
     return point;
