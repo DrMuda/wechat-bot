@@ -31,7 +31,7 @@ export const parseText = (text: string, user: string): RecvdRes => {
           break;
         }
       }
-      const money = saveData[fieldName] * 1000;
+      const money = saveData[fieldName] * 20000;
       if (saveData.money < money) {
         return {
           success: true,
