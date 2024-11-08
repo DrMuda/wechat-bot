@@ -150,7 +150,7 @@ const thieveryMakeMoney = ({
   }
   const saveDataMap = getSaveDataMap();
   const userSaveData = saveDataMap[user];
-  const targetSaveData = saveDataMap[user];
+  const targetSaveData = saveDataMap[targetName];
   if (!targetSaveData || !userSaveData) {
     return {
       success: false,
