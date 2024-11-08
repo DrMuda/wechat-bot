@@ -50,6 +50,7 @@ export const sendMsgToWx = ({
   content: string;
 }) => {
   console.log(content);
+  if (process.env.NODE_ENV === 'develop') return Promise.resolve();
   return axios.post(
     'http://wxBotWebhook:3001/webhook/msg/v2?token=YpIZOxT77sGR',
     {

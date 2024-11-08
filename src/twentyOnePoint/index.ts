@@ -1,6 +1,6 @@
 import { addMoney } from 'src/money';
 import { getSaveDataByUser } from 'src/saveData';
-import { sendMsgToWx, waitTime } from 'src/utils';
+import { getNowFortune, sendMsgToWx, waitTime } from 'src/utils';
 import { RecvdRes } from 'src/utils/type';
 import { Keywords as GlobalKeywords } from 'src/config';
 
@@ -60,8 +60,7 @@ export class TwentyOnePoint {
     }
     this.timeOutTimer = setTimeout(
       () => {
-        this.resetPokerList();
-        this.stopGame(roomName);
+        this.stopGame(roomName, botName);
         sendMsgToWx({
           to: roomName,
           isRoom: true,
@@ -82,7 +81,7 @@ export class TwentyOnePoint {
       text.includes(GlobalKeywords.StopTwentyOnePoint) &&
       [this.userA, this.userB].includes(user)
     ) {
-      return this.stopGame(roomName);
+      return this.stopGame(roomName, user);
     }
     if (
       text.includes(GlobalKeywords.StartTwentyOnePointWithBot) &&
@@ -277,18 +276,29 @@ export class TwentyOnePoint {
 
   turn(actionList: { type: 'deal' | 'stop'; user: 'A' | 'B' }[]): RecvdRes {
     console.log(actionList);
+    const dealPoker = (user: string, userPokerList: Poker[]) => {
+      let poker = this.pokerList.pop();
+      if (!poker) return;
+      if (this.getPointNumber([...userPokerList, poker]) > 21) {
+        userPokerList.push({ ...poker, point: 0 });
+        const { luck } = getSaveDataByUser(user);
+        const fortune = getNowFortune(user);
+        if (Math.random() < luck / 100 + fortune) {
+          poker = this.pokerList.pop();
+        }
+      }
+      poker && userPokerList.push(poker);
+    };
     actionList.forEach(({ type, user }) => {
       switch (type) {
         case 'deal': {
           switch (user) {
             case 'A': {
-              const poker = this.pokerList.pop();
-              poker && this.userAPokerList.push(poker);
+              dealPoker(this.userA!, this.userAPokerList);
               break;
             }
             case 'B': {
-              const poker = this.pokerList.pop();
-              poker && this.userBPokerList.push(poker);
+              dealPoker(this.userB!, this.userBPokerList);
               break;
             }
           }
@@ -379,8 +389,8 @@ export class TwentyOnePoint {
     const bPoint = this.getPointNumber(this.userBPokerList);
 
     const handPokerList = [
-      `${this.userA}手牌: [${this.userAPokerList?.map(({ poker }) => poker).join(', ')}], 点数${aPoint}`,
-      `${this.userB}手牌: [${this.userBPokerList?.map(({ poker }) => poker).join(', ')}], 点数${bPoint}`,
+      `${this.userA}手牌: [${this.userAPokerList?.map(({ poker, point }) => (point === 0 ? `!${poker}` : poker)).join(', ')}], 点数${aPoint}`,
+      `${this.userB}手牌: [${this.userBPokerList?.map(({ poker, point }) => (point === 0 ? `!${poker}` : poker)).join(', ')}], 点数${bPoint}`,
     ];
     if (aPoint > 21) {
       aIsBust = true;
@@ -508,20 +518,50 @@ export class TwentyOnePoint {
     };
   }
 
-  async stopGame(roomName: string): Promise<RecvdRes> {
+  async stopGame(roomName: string, user: string): Promise<RecvdRes> {
     // 防止有人玩不起掀桌
     if (this.runningStep === 'turning') {
-      this.userADealAction = 'stop';
-      this.userBDealAction = 'stop';
-      const { data } = this.turn([
-        { type: 'stop', user: 'A' },
-        { type: 'stop', user: 'B' },
-      ]);
-      await sendMsgToWx({
-        content: data?.content || '',
-        isRoom: true,
-        to: roomName,
-      });
+      // 一直发牌直到爆牌
+      const dealToBust = async (user: 'A' | 'B') => {
+        let res: RecvdRes | null = null;
+        this.userADealAction = 'stop';
+        this.userBDealAction = 'stop';
+        while (true) {
+          if (user === 'A') {
+            this.userADealAction = 'deal';
+            if (this.getPointNumber(this.userAPokerList) > 21) break;
+          }
+          if (user === 'B') {
+            this.userBDealAction = 'deal';
+            if (this.getPointNumber(this.userBPokerList) > 21) break;
+          }
+          res = this.turn([{ type: 'deal', user }]);
+          await sendMsgToWx({
+            to: roomName,
+            isRoom: true,
+            content: res.data?.content || '',
+          });
+        }
+      };
+      if (user === this.userA) {
+        await dealToBust('A');
+      }
+      if (user === this.userB) {
+        await dealToBust('B');
+      }
+      if (user === botName) {
+        this.userADealAction = 'stop';
+        this.userBDealAction = 'stop';
+        const res = this.turn([
+          { type: 'stop', user: 'A' },
+          { type: 'stop', user: 'B' },
+        ]);
+        await sendMsgToWx({
+          to: roomName,
+          isRoom: true,
+          content: res.data?.content || '',
+        });
+      }
     }
     this.runningStep = 'stop';
     this.resetPokerList();
