@@ -521,17 +521,21 @@ export class TwentyOnePoint {
   async stopGame(roomName: string, user: string): Promise<RecvdRes> {
     // 防止有人玩不起掀桌
     if (this.runningStep === 'turning') {
+      this.userAStop = true
+      this.userBStop = true
+      this.userADealAction = 'stop';
+      this.userBDealAction = 'stop';
       // 一直发牌直到爆牌
       const dealToBust = async (user: 'A' | 'B') => {
         let res: RecvdRes | null = null;
-        this.userADealAction = 'stop';
-        this.userBDealAction = 'stop';
         while (true) {
           if (user === 'A') {
+            this.userAStop = false
             this.userADealAction = 'deal';
             if (this.getPointNumber(this.userAPokerList) > 21) break;
           }
           if (user === 'B') {
+            this.userBStop = false
             this.userBDealAction = 'deal';
             if (this.getPointNumber(this.userBPokerList) > 21) break;
           }
@@ -550,8 +554,6 @@ export class TwentyOnePoint {
         await dealToBust('B');
       }
       if (user === botName) {
-        this.userADealAction = 'stop';
-        this.userBDealAction = 'stop';
         const res = this.turn([
           { type: 'stop', user: 'A' },
           { type: 'stop', user: 'B' },
@@ -562,6 +564,7 @@ export class TwentyOnePoint {
           content: res.data?.content || '',
         });
       }
+      this.checkoutAndRenderHandPoker()
     }
     this.runningStep = 'stop';
     this.resetPokerList();
