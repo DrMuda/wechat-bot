@@ -60,7 +60,13 @@ export class TwentyOnePoint {
     }
     this.timeOutTimer = setTimeout(
       () => {
-        this.stopGame(roomName, botName);
+        if (this.userADealAction) {
+          this.stopGame(roomName, 'B');
+        } else if (this.userBDealAction) {
+          this.stopGame(roomName, 'A');
+        } else {
+          this.stopGame(roomName, botName);
+        }
         sendMsgToWx({
           to: roomName,
           isRoom: true,
