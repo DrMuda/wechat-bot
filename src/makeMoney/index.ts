@@ -203,7 +203,7 @@ const thieveryMakeMoney = ({
   saveDataByUser({ releaseFromPrisonTime }, user);
   return {
     success: false,
-    money: shouldGetMoney / 2,
+    money: -shouldGetMoney / 2,
     levelUp,
     extra: [`👮‍♀️你被捕了, 释放时间${releaseFromPrisonTime}`],
   };
