@@ -265,13 +265,13 @@ const escapeFromPrison = (user: string): MakeMoneyResult => {
       user,
     );
     return {
-      success: true,
+      success: false,
       extra: [`越狱成功`],
       onlyExtra: true,
     };
   }
   return {
-    success: true,
+    success: false,
     extra: [`越狱失败了`],
     onlyExtra: true,
   };
@@ -305,6 +305,7 @@ export const parseText = (text: string, user: string): RecvdRes => {
       extra = [],
       inCd = false,
       onlyExtra = false,
+      otherUser,
     } = makeMoneyResult;
     addMoney(money, user);
     const saveData = getSaveDataByUser(user);
@@ -329,6 +330,12 @@ export const parseText = (text: string, user: string): RecvdRes => {
       content.push(`冷却中...`);
     } else {
       saveData.prevMakeMoney = dayjs().format('YYYY-MM-DD HH:mm:ss');
+    }
+
+    if (otherUser) {
+      otherUser.forEach(({ money, user }) => {
+        user && addMoney(money || 0, user);
+      });
     }
 
     saveDataByUser(saveData, user);
