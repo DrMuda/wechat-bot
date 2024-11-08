@@ -280,10 +280,10 @@ export class TwentyOnePoint {
       let poker = this.pokerList.pop();
       if (!poker) return;
       if (this.getPointNumber([...userPokerList, poker]) > 21) {
-        userPokerList.push({ ...poker, point: 0 });
         const { luck } = getSaveDataByUser(user);
         const fortune = getNowFortune(user);
         if (Math.random() < luck / 100 + fortune) {
+          userPokerList.push({ ...poker, point: 0 });
           poker = this.pokerList.pop();
         }
       }
@@ -521,8 +521,8 @@ export class TwentyOnePoint {
   async stopGame(roomName: string, user: string): Promise<RecvdRes> {
     // 防止有人玩不起掀桌
     if (this.runningStep === 'turning') {
-      this.userAStop = true
-      this.userBStop = true
+      this.userAStop = true;
+      this.userBStop = true;
       this.userADealAction = 'stop';
       this.userBDealAction = 'stop';
       // 一直发牌直到爆牌
@@ -530,12 +530,12 @@ export class TwentyOnePoint {
         let res: RecvdRes | null = null;
         while (true) {
           if (user === 'A') {
-            this.userAStop = false
+            this.userAStop = false;
             this.userADealAction = 'deal';
             if (this.getPointNumber(this.userAPokerList) > 21) break;
           }
           if (user === 'B') {
-            this.userBStop = false
+            this.userBStop = false;
             this.userBDealAction = 'deal';
             if (this.getPointNumber(this.userBPokerList) > 21) break;
           }
@@ -564,7 +564,7 @@ export class TwentyOnePoint {
           content: res.data?.content || '',
         });
       }
-      this.checkoutAndRenderHandPoker()
+      this.checkoutAndRenderHandPoker();
     }
     this.runningStep = 'stop';
     this.resetPokerList();
