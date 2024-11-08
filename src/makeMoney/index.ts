@@ -87,18 +87,19 @@ const itinerantMerchantMakeMoney = ({
   saveData: Required<SaveData>;
   text: string;
 }): MakeMoneyResult => {
-  const regExp = new RegExp(`${Keywords.ItinerantMerchant}[1-9][0-9]{0,6}`);
+  const regExp = new RegExp(`${Keywords.ItinerantMerchant}([1-9][0-9]{0,6})`);
   const match = text.match(regExp);
   if (match?.[1]) {
-    const cost = Number(match);
+    const cost = Number(match[1]);
     const { luck, money, bargainingPower } = saveData;
-    if (money < cost)
+    if (money < cost) {
       return {
         success: false,
         money: 0,
         levelUp: false,
         extra: [`金币不足, 余额${money}`],
       };
+    }
 
     const { successProbability, luckProbability } = getProbability(
       user,
@@ -106,9 +107,7 @@ const itinerantMerchantMakeMoney = ({
       bargainingPower,
     );
     const shouldGetMoney = Math.round(
-      bargainingPower *
-        (1 + (bargainingPower / 100) * 2) *
-        (1 + random(-0.3, 0.3)),
+      cost * (1 + (bargainingPower / 100) * 2 + random(-0.3, 0.3)),
     );
     const levelUp = Math.random() < 1 / bargainingPower;
     if (Math.random() < successProbability) {
@@ -222,6 +221,7 @@ export const makeMoney = (
   }
   if (!saveData) return { success: false, money: 0, levelUp: false };
   if (
+    process.env.NODE_ENV !== 'develop' &&
     saveData.prevMakeMoney &&
     dayjs().unix() - dayjs(saveData.prevMakeMoney).unix() < 1 * 60
   ) {
