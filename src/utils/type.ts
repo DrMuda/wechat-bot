@@ -1,14 +1,16 @@
 export interface SaveData {
-  money: number;
-  prevSignInTime: string;
-  luck: number;
+  money?: number;
+  prevSignInTime?: string;
+  luck?: number;
   /** 战斗力 */
-  battleStrength: number;
+  battleStrength?: number;
   /** 议价能力 */
-  bargainingPower: number;
+  bargainingPower?: number;
   /** 盗窃能力 */
-  thieverySkills: number;
-  prevMakeMoney: string | null;
+  thieverySkills?: number;
+  prevMakeMoney?: string | null;
+  /** 蹲小黑屋的释放时间 */
+  releaseFromPrisonTime?: string | null;
 }
 
 export interface SaveDataMap {

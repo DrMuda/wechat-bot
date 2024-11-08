@@ -3,6 +3,16 @@ import * as fs from 'fs';
 import { DefaultMakeMoneyAttribute, saveDataDir } from 'src/config';
 
 const dayjs = require('dayjs');
+export const defaultSaveData: Required<SaveData> = {
+  money: 0,
+  prevSignInTime: dayjs().format('YYYY-MM-DD hh:mm:ss'),
+  bargainingPower: DefaultMakeMoneyAttribute,
+  battleStrength: DefaultMakeMoneyAttribute,
+  luck: DefaultMakeMoneyAttribute,
+  thieverySkills: DefaultMakeMoneyAttribute,
+  prevMakeMoney: null,
+  releaseFromPrisonTime: null,
+};
 
 const filePath = `${saveDataDir}/saveData.json`;
 export const findOrCreateSaveData = (): SaveDataMap => {
@@ -27,31 +37,28 @@ export const saveDataMap = (data: SaveDataMap) => {
   });
 };
 
-export const getSaveDataMap = () => {
-  return findOrCreateSaveData();
+export const getSaveDataMap = (): Record<
+  string,
+  Required<SaveData> | undefined
+> => {
+  const originSaveDataMap = findOrCreateSaveData();
+  const map: Record<string, Required<SaveData> | undefined> = {};
+  Object.entries(originSaveDataMap).forEach(([userName, saveData]) => {
+    map[userName] = { ...defaultSaveData, ...saveData! };
+  });
+  return map;
 };
 
 export const saveDataByUser = (data: SaveData, user: string) => {
   const dataMap = getSaveDataMap();
 
-  dataMap[user] = data;
+  dataMap[user] = { ...dataMap[user]!, ...data };
   fs.writeFileSync(filePath, JSON.stringify(dataMap, null, 2), {
     encoding: 'utf-8',
   });
 };
 
-export const getSaveDataByUser = (user: string) => {
+export const getSaveDataByUser = (user: string): Required<SaveData> => {
   const dataMap = getSaveDataMap();
-
-  dataMap[user] = {
-    money: 0,
-    prevSignInTime: dayjs().format('YYYY-MM-DD hh:mm:ss'),
-    bargainingPower: DefaultMakeMoneyAttribute,
-    battleStrength: DefaultMakeMoneyAttribute,
-    luck: DefaultMakeMoneyAttribute,
-    thieverySkills: DefaultMakeMoneyAttribute,
-    prevMakeMoney: null,
-    ...dataMap[user],
-  };
-  return dataMap[user];
+  return { ...defaultSaveData, ...dataMap[user] };
 };

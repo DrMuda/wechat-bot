@@ -16,9 +16,10 @@ export const Keywords = {
   MyInfo: '我的数据',
   Adventure: '冒险',
   ItinerantMerchant: '行商',
-  Thievery: '盗窃',
+  Thievery: '打劫',
   Upgrade: '升级',
-};
+  EscapeFromPrison: '越狱',
+} as const;
 
 // 赚钱属性最大值
 export const MaxMakeMoneyAttribute = 100;
@@ -30,6 +31,7 @@ export const saveDataLabelMap: Record<keyof SaveData, string> = {
   luck: '幸运值',
   money: '金币',
   prevSignInTime: '上次签到时间',
-  thieverySkills: '盗窃能力',
+  thieverySkills: '打劫能力',
   prevMakeMoney: '上次赚钱时间',
+  releaseFromPrisonTime: '小黑屋释放时间',
 }
