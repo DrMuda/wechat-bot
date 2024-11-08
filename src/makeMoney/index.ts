@@ -136,6 +136,7 @@ const thieveryMakeMoney = ({
   user: string;
   text: string;
 }): MakeMoneyResult => {
+  console.log(text);
   const targetName = text
     .replace(Keywords.Thievery, '')
     .replace('@', '')
@@ -170,14 +171,16 @@ const thieveryMakeMoney = ({
         (1 - mainAttributeProbability) *
         (1 - luckProbability),
   );
-  const shouldGetMoney =
+  const shouldGetMoney = Math.round(
     (targetSaveData.money / 2) *
-    Math.min(
-      1 +
-        random(-0.3, 0.3) +
-        userSaveData.thieverySkills / MaxMakeMoneyAttribute,
-      2,
-    );
+      Math.min(
+        1 +
+          random(-0.3, 0.3) +
+          userSaveData.thieverySkills / MaxMakeMoneyAttribute,
+        2,
+      ),
+  );
+
   const levelUp = Math.random() < 1 / userSaveData.thieverySkills;
   if (targetSaveData.money <= 0) {
     return { success: false, money: 0, levelUp, extra: [`倒霉, 这人是穷鬼`] };
