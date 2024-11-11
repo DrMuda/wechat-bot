@@ -171,14 +171,17 @@ const thieveryMakeMoney = ({
         (1 - mainAttributeProbability) *
         (1 - luckProbability),
   );
-  const shouldGetMoney = Math.round(
-    (targetSaveData.money / 2) *
-      Math.min(
-        1 +
-          random(-0.3, 0.3) +
-          userSaveData.thieverySkills / MaxMakeMoneyAttribute,
-        2,
-      ),
+  const shouldGetMoney = Math.min(
+    1000000,
+    Math.round(
+      (targetSaveData.money / 2) *
+        Math.min(
+          1 +
+            random(-0.3, 0.3) +
+            userSaveData.thieverySkills / MaxMakeMoneyAttribute,
+          2,
+        ),
+    ),
   );
 
   const levelUp = Math.random() < 1 / userSaveData.thieverySkills;
