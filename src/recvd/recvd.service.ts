@@ -60,12 +60,12 @@ export class RecvdService {
     if (res.success) return res;
 
     if (fromUser) {
-      res = makeMoneyParseText(content, fromUser);
+      res = upgradeParseText(content, fromUser);
     }
     if (res.success) return res;
 
     if (fromUser) {
-      res = upgradeParseText(content, fromUser);
+      res = makeMoneyParseText(content, fromUser);
     }
     if (res.success) return res;
 
