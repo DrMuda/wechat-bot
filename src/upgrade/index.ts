@@ -1,4 +1,4 @@
-import { Keywords, saveDataLabelMap } from 'src/config';
+import { Keywords, MaxMakeMoneyAttribute, saveDataLabelMap } from 'src/config';
 import { getSaveDataByUser, saveDataByUser } from 'src/saveData';
 import { RecvdRes, SaveData } from 'src/utils/type';
 
@@ -17,10 +17,8 @@ export const parseText = (text: string, user: string): RecvdRes => {
     const saveData = getSaveDataByUser(user);
     if (matchAttributeNameWithCount && matchAttributeNameWithCount?.[1]) {
       const attributeName = matchAttributeNameWithCount[1];
-      const count = Math.min(
-        Number(matchAttributeNameWithCount[2]?.replaceAll('*', '')) || 1,
-        1000,
-      );
+      const count =
+        Number(matchAttributeNameWithCount[2]?.replaceAll('*', '')) || 1;
       let fieldName: keyof SaveData = 'luck';
       switch (attributeName) {
         case saveDataLabelMap.luck: {
@@ -40,10 +38,14 @@ export const parseText = (text: string, user: string): RecvdRes => {
           break;
         }
       }
+      if (saveData[fieldName] >= MaxMakeMoneyAttribute) {
+        return { success: true, data: { content: `${attributeName}已满级` } };
+      }
       let money = 0;
       for (let i = 0; i < count; i++) {
         saveData[fieldName] = saveData[fieldName] + 1;
         money = money + saveData[fieldName] * 10000;
+        if (saveData[fieldName] >= MaxMakeMoneyAttribute) break;
       }
       if (saveData.money < money) {
         return {
