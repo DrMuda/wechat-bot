@@ -8,7 +8,8 @@ export interface SaveData {
   bargainingPower?: number;
   /** 盗窃能力 */
   thieverySkills?: number;
-  prevMakeMoney?: string | null;
+  /** 上一次赚钱时间 */
+  prevMakeMoneyTime?: string | null;
   /** 蹲小黑屋的释放时间 */
   releaseFromPrisonTime?: string | null;
 }

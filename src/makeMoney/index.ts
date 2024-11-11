@@ -228,8 +228,8 @@ export const makeMoney = (
   if (!saveData) return { success: false, money: 0, levelUp: false };
   if (
     process.env.NODE_ENV !== 'develop' &&
-    saveData.prevMakeMoney &&
-    dayjs().unix() - dayjs(saveData.prevMakeMoney).unix() < 1 * 60
+    saveData.prevMakeMoneyTime &&
+    dayjs().unix() - dayjs(saveData.prevMakeMoneyTime).unix() < 1 * 60
   ) {
     return { success: false, money: 0, levelUp: false, inCd: true };
   }
@@ -331,8 +331,6 @@ export const parseText = (text: string, user: string): RecvdRes => {
 
     if (inCd) {
       content.push(`冷却中...`);
-    } else {
-      saveData.prevMakeMoney = dayjs().format('YYYY-MM-DD HH:mm:ss');
     }
 
     if (otherUser) {
@@ -341,6 +339,10 @@ export const parseText = (text: string, user: string): RecvdRes => {
       });
     }
 
+    if (success) {
+      saveData.prevMakeMoneyTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
+    }
+    
     saveDataByUser(saveData, user);
     return {
       success: true,
