@@ -4,16 +4,25 @@ import { RecvdRes, SaveData } from 'src/utils/type';
 
 export const parseText = (text: string, user: string): RecvdRes => {
   if (text.includes(Keywords.Upgrade)) {
-    const reg = new RegExp(
-      `${Keywords.Upgrade}((?:${saveDataLabelMap.luck}|${saveDataLabelMap.bargainingPower}|${saveDataLabelMap.battleStrength}|${saveDataLabelMap.thieverySkills}))`,
+    const attributeNameRegExpStr = `${Keywords.Upgrade}((?:${saveDataLabelMap.luck}|${saveDataLabelMap.bargainingPower}|${saveDataLabelMap.battleStrength}|${saveDataLabelMap.thieverySkills}))`;
+
+    const attributeNameWithCountRegExpStr = `${attributeNameRegExpStr}(\\*[1-9][0-9]?)?`;
+    const attributeNameWithCountRegExp = new RegExp(
+      attributeNameWithCountRegExpStr,
     );
-    const match = text.match(reg);
+    const matchAttributeNameWithCount = text.match(
+      attributeNameWithCountRegExp,
+    );
 
     const saveData = getSaveDataByUser(user);
-    if (match && match[1]) {
-      const keyword = match[1];
+    if (matchAttributeNameWithCount && matchAttributeNameWithCount?.[1]) {
+      const attributeName = matchAttributeNameWithCount[1];
+      const count = Math.min(
+        Number(matchAttributeNameWithCount[2]?.replaceAll('*', '')) || 1,
+        1000,
+      );
       let fieldName: keyof SaveData = 'luck';
-      switch (keyword) {
+      switch (attributeName) {
         case saveDataLabelMap.luck: {
           fieldName = 'luck';
           break;
@@ -31,7 +40,11 @@ export const parseText = (text: string, user: string): RecvdRes => {
           break;
         }
       }
-      const money = saveData[fieldName] * 20000;
+      let money = 0;
+      for (let i = 0; i < count; i++) {
+        saveData[fieldName] = saveData[fieldName] + 1;
+        money = money + saveData[fieldName] * 10000;
+      }
       if (saveData.money < money) {
         return {
           success: true,
@@ -40,20 +53,21 @@ export const parseText = (text: string, user: string): RecvdRes => {
           },
         };
       }
-      saveData[fieldName] = saveData[fieldName] + 1;
       saveData.money = saveData.money - money;
       saveDataByUser(saveData, user);
       return {
         success: true,
         data: {
-          content: `升级成功， 消耗${money}金币， 当前${keyword}: ${saveData[fieldName]}`,
+          content: `本次升级${attributeName}*${count}成功， 消耗${money}金币， 当前${attributeName}: ${saveData[fieldName]}`,
         },
       };
     }
 
     return {
       success: true,
-      data: { content: '回复示例: 升级幸运值；升级战斗力' },
+      data: {
+        content: `回复示例: 升级${saveDataLabelMap.luck}；升级${saveDataLabelMap.battleStrength}*10`,
+      },
     };
   }
   return { success: false };
