@@ -19,6 +19,7 @@ export class RecvdController {
     const content = (body.content as string).replace('@木小博士', '').trim();
     let source = {} as RecvdRequestBodySource;
     try {
+      console.log(body.source);
       source = JSON.parse(body.source);
     } catch (error) {
       console.error('source 解析失败', error);
