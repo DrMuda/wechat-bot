@@ -71,7 +71,7 @@ export const random = (start: number, end: number, seed?: number) => {
 
 export const getMyInfo = (user: string): string => {
   const saveData = getSaveDataByUser(user);
-  let fortuneLabel = '大吉';
+  let fortuneLabel = '';
   const fortune = getNowFortune(user);
   if (fortune > -0.4) {
     fortuneLabel = '大凶';
@@ -80,7 +80,7 @@ export const getMyInfo = (user: string): string => {
     fortuneLabel = '小凶';
   }
   if (fortune > 0) {
-    fortuneLabel = '吉';
+    fortuneLabel = '平';
   }
   if (fortune > 0.2) {
     fortuneLabel = '小吉';

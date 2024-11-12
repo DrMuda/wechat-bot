@@ -12,6 +12,7 @@ export const defaultSaveData: Required<SaveData> = {
   thieverySkills: DefaultMakeMoneyAttribute,
   prevMakeMoneyTime: null,
   releaseFromPrisonTime: null,
+  prevEscapeFromPrison: null,
 };
 
 const filePath = `${saveDataDir}/saveData.json`;

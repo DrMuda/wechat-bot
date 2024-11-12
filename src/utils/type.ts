@@ -12,6 +12,8 @@ export interface SaveData {
   prevMakeMoneyTime?: string | null;
   /** 蹲小黑屋的释放时间 */
   releaseFromPrisonTime?: string | null;
+  /** 上次越狱时间 */
+  prevEscapeFromPrison?: string | null;
 }
 
 export interface SaveDataMap {

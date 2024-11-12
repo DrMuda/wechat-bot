@@ -19,6 +19,7 @@ export const Keywords = {
   Thievery: '打劫',
   Upgrade: '升级',
   EscapeFromPrison: '越狱',
+  Bail: '保释',
 } as const;
 
 // 赚钱属性最大值
@@ -34,4 +35,5 @@ export const saveDataLabelMap: Record<keyof SaveData, string> = {
   thieverySkills: '打劫能力',
   prevMakeMoneyTime: '上次赚钱时间',
   releaseFromPrisonTime: '小黑屋释放时间',
+  prevEscapeFromPrison: '上次越狱时间',
 }

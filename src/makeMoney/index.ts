@@ -32,6 +32,8 @@ interface MakeMoneyResult {
 const { Adventure, ItinerantMerchant, Thievery } = EMakeMoneyAction;
 
 const baseProbability = 0.5;
+// 基础保释金， * thieverySkills
+const baseBailMoney = 1000;
 
 const getProbability = (user: string, luck: number, mainAttribute: number) => {
   const fortune = getNowFortune(user);
@@ -208,7 +210,9 @@ const thieveryMakeMoney = ({
     success: false,
     money: -shouldGetMoney / 2,
     levelUp,
-    extra: [`👮‍♀️你被捕了, 释放时间${releaseFromPrisonTime}`],
+    extra: [
+      `👮‍♀️你被捕了, 释放时间${releaseFromPrisonTime}, 保释金${userSaveData.thieverySkills * baseBailMoney}`,
+    ],
   };
 };
 
@@ -257,14 +261,22 @@ const escapeFromPrison = (user: string): MakeMoneyResult => {
       onlyExtra: true,
     };
   }
+  if (dayjs().unix() < dayjs(saveData.prevEscapeFromPrison).unix() + 1 * 60) {
+    return {
+      success: false,
+      extra: [`越狱冷却中`],
+      onlyExtra: true,
+    };
+  }
   const { luckProbability } = getProbability(
     user,
     saveData.luck,
     saveData.thieverySkills,
   );
+  const prevEscapeFromPrison = dayjs().format('YYYY-MM-DD HH:mm:ss');
   if (Math.random() < luckProbability / 2) {
     saveDataByUser(
-      { releaseFromPrisonTime: dayjs().format('YYYY-MM-DD HH:mm:ss') },
+      { releaseFromPrisonTime: prevEscapeFromPrison, prevEscapeFromPrison },
       user,
     );
     return {
@@ -273,11 +285,28 @@ const escapeFromPrison = (user: string): MakeMoneyResult => {
       onlyExtra: true,
     };
   }
+  saveDataByUser({ prevEscapeFromPrison }, user);
   return {
     success: false,
     extra: [`越狱失败了`],
     onlyExtra: true,
   };
+};
+
+const bail = (user: string): MakeMoneyResult => {
+  const saveData = getSaveDataByUser(user);
+  if (!saveData) return { success: false };
+  const { money, thieverySkills } = saveData;
+  const bailMoney = baseBailMoney * thieverySkills;
+  if (saveData.money < bailMoney) {
+    return { success: false, extra: [`保释金${bailMoney}不足， 余额${money}`] };
+  }
+  addMoney(-bailMoney, user);
+  saveDataByUser(
+    { releaseFromPrisonTime: dayjs().format('YYYY-MM-DD HH:mm:ss') },
+    user,
+  );
+  return { success: true, extra: [`保释成功， 余额${money - bailMoney}`] };
 };
 
 export const parseText = (text: string, user: string): RecvdRes => {
@@ -298,6 +327,8 @@ export const parseText = (text: string, user: string): RecvdRes => {
     mainAttributeFieldName = 'thieverySkills';
   } else if (text.includes(Keywords.EscapeFromPrison)) {
     makeMoneyResult = escapeFromPrison(user);
+  } else if (text.includes(Keywords.Bail)) {
+    makeMoneyResult = bail(user);
   }
 
   if (makeMoneyResult) {
@@ -342,7 +373,7 @@ export const parseText = (text: string, user: string): RecvdRes => {
     if (success) {
       saveData.prevMakeMoneyTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
     }
-    
+
     saveDataByUser(saveData, user);
     return {
       success: true,
