@@ -299,14 +299,22 @@ const bail = (user: string): MakeMoneyResult => {
   const { money, thieverySkills } = saveData;
   const bailMoney = baseBailMoney * thieverySkills;
   if (saveData.money < bailMoney) {
-    return { success: false, extra: [`保释金${bailMoney}不足， 余额${money}`] };
+    return {
+      success: false,
+      extra: [`保释金${bailMoney}不足， 余额${money}`],
+      onlyExtra: true,
+    };
   }
   addMoney(-bailMoney, user);
   saveDataByUser(
     { releaseFromPrisonTime: dayjs().format('YYYY-MM-DD HH:mm:ss') },
     user,
   );
-  return { success: true, extra: [`保释成功， 余额${money - bailMoney}`] };
+  return {
+    success: true,
+    extra: [`保释成功， 余额${money - bailMoney}`],
+    onlyExtra: true,
+  };
 };
 
 export const parseText = (text: string, user: string): RecvdRes => {
