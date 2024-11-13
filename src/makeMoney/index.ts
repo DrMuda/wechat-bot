@@ -1,4 +1,9 @@
-import { Keywords, MaxMakeMoneyAttribute, saveDataLabelMap } from 'src/config';
+import {
+  botName,
+  Keywords,
+  MaxMakeMoneyAttribute,
+  saveDataLabelMap,
+} from 'src/config';
 import { addMoney } from 'src/money';
 import {
   getSaveDataByUser,
@@ -380,6 +385,9 @@ export const parseText = (text: string, user: string): RecvdRes => {
       successProbability,
     } = makeMoneyResult;
     addMoney(Math.round(money), user);
+    if (money < 0) {
+      addMoney(Math.round(money), botName);
+    }
     const saveData = getSaveDataByUser(user);
     const content: string[] = [];
 

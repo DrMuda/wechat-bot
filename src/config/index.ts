@@ -37,3 +37,5 @@ export const saveDataLabelMap: Record<keyof SaveData, string> = {
   releaseFromPrisonTime: '小黑屋释放时间',
   prevEscapeFromPrison: '上次越狱时间',
 }
+
+export const botName = '木小博士';

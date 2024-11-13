@@ -2,7 +2,7 @@ import { addMoney } from 'src/money';
 import { getSaveDataByUser } from 'src/saveData';
 import { getNowFortune, sendMsgToWx, waitTime } from 'src/utils';
 import { RecvdRes } from 'src/utils/type';
-import { Keywords as GlobalKeywords } from 'src/config';
+import { botName, Keywords as GlobalKeywords } from 'src/config';
 
 const pokerTypeList = [
   'A',
@@ -33,7 +33,6 @@ const Keywords = {
   Bet: '赌注',
   StartDirectly: '直接开始',
 };
-const botName = '木小博士';
 const maxSinglePokerPoint = 10;
 const maxBet = 9999999;
 export class TwentyOnePoint {
