@@ -412,10 +412,6 @@ export const parseText = (text: string, user: string): RecvdRes => {
       saveData.prevMakeMoneyTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
     }
 
-    if (successProbability) {
-      content.push(`本次成功概率${successProbability}`);
-    }
-
     saveDataByUser(saveData, user);
     return {
       success: true,

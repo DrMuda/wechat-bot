@@ -92,7 +92,7 @@ export const getMyInfo = (user: string): string => {
     ...Object.entries(saveData).map(([fieldName, value]) => {
       return `${saveDataLabelMap[fieldName as keyof SaveData]}: ${value}`;
     }),
-    `现在运势：${fortuneLabel}`,
+    `现在运势：${fortuneLabel}(${Math.round(fortune*100)}%)`,
   ].join('\n');
 };
 
