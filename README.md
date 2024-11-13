@@ -14,4 +14,5 @@ docker run -d --name wxBotWebhook -p 3001:3001 \
 --network my-network \
 -v ~/wxBot_logs:/app/log \
 -e RECVD_MSG_API=http://wechat-bot:3000/recvd \
+-e LOCAL_LOGIN_API_TOKEN=YpIZOxT77sGR \
 dannicool/docker-wechatbot-webhook

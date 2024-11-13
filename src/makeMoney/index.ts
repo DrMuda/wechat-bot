@@ -118,7 +118,7 @@ const itinerantMerchantMakeMoney = ({
     if (Math.random() < luckProbability / 2) {
       return { success: false, money: 0, levelUp };
     }
-    return { success: false, money: shouldGetMoney, levelUp };
+    return { success: false, money: -shouldGetMoney, levelUp };
   }
   return {
     success: false,
@@ -349,7 +349,7 @@ export const parseText = (text: string, user: string): RecvdRes => {
       onlyExtra = false,
       otherUser,
     } = makeMoneyResult;
-    addMoney(money, user);
+    addMoney(Math.round(money), user);
     const saveData = getSaveDataByUser(user);
     const content: string[] = [];
 
