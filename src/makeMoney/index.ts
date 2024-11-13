@@ -27,6 +27,7 @@ interface MakeMoneyResult {
     user?: string;
     money?: number;
   }[];
+  successProbability?: number;
 }
 
 const { Adventure, ItinerantMerchant, Thievery } = EMakeMoneyAction;
@@ -72,12 +73,22 @@ const baseMakeMoney = (
   const levelUp = Math.random() < 1 / mainAttribute;
 
   if (Math.random() < successProbability) {
-    return { success: true, money: shouldGetMoney, levelUp };
+    return {
+      success: true,
+      money: shouldGetMoney,
+      levelUp,
+      successProbability,
+    };
   }
   if (Math.random() < luckProbability / 2) {
-    return { success: false, money: 0, levelUp };
+    return { success: false, money: 0, levelUp, successProbability };
   }
-  return { success: false, money: -shouldGetMoney, levelUp };
+  return {
+    success: false,
+    money: -shouldGetMoney,
+    levelUp,
+    successProbability,
+  };
 };
 
 const itinerantMerchantMakeMoney = ({
@@ -113,12 +124,22 @@ const itinerantMerchantMakeMoney = ({
     );
     const levelUp = Math.random() < 1 / bargainingPower;
     if (Math.random() < successProbability) {
-      return { success: true, money: shouldGetMoney, levelUp };
+      return {
+        success: true,
+        money: shouldGetMoney,
+        levelUp,
+        successProbability,
+      };
     }
     if (Math.random() < luckProbability / 2) {
-      return { success: false, money: 0, levelUp };
+      return { success: false, money: 0, levelUp, successProbability };
     }
-    return { success: false, money: -shouldGetMoney, levelUp };
+    return {
+      success: false,
+      money: -shouldGetMoney,
+      levelUp,
+      successProbability,
+    };
   }
   return {
     success: false,
@@ -188,7 +209,13 @@ const thieveryMakeMoney = ({
 
   const levelUp = Math.random() < 1 / userSaveData.thieverySkills;
   if (targetSaveData.money <= 0) {
-    return { success: false, money: 0, levelUp, extra: [`倒霉, 这人是穷鬼`] };
+    return {
+      success: false,
+      money: 0,
+      levelUp,
+      extra: [`倒霉, 这人是穷鬼`],
+      successProbability,
+    };
   }
   if (Math.random() < successProbability) {
     return {
@@ -196,10 +223,11 @@ const thieveryMakeMoney = ({
       money: shouldGetMoney,
       levelUp,
       otherUser: [{ money: -shouldGetMoney, user: targetName }],
+      successProbability,
     };
   }
   if (Math.random() < luckProbability * 2) {
-    return { success: false, money: 0, levelUp };
+    return { success: false, money: 0, levelUp, successProbability };
   }
 
   const releaseFromPrisonTime = dayjs()
@@ -213,6 +241,7 @@ const thieveryMakeMoney = ({
     extra: [
       `👮‍♀️你被捕了, 释放时间${releaseFromPrisonTime}, 保释金${userSaveData.thieverySkills * baseBailMoney}`,
     ],
+    successProbability,
   };
 };
 
@@ -348,6 +377,7 @@ export const parseText = (text: string, user: string): RecvdRes => {
       inCd = false,
       onlyExtra = false,
       otherUser,
+      successProbability,
     } = makeMoneyResult;
     addMoney(Math.round(money), user);
     const saveData = getSaveDataByUser(user);
@@ -380,6 +410,10 @@ export const parseText = (text: string, user: string): RecvdRes => {
 
     if (success) {
       saveData.prevMakeMoneyTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
+    }
+
+    if (successProbability) {
+      content.push(`本次成功概率${successProbability}`);
     }
 
     saveDataByUser(saveData, user);
