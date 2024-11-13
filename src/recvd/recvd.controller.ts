@@ -16,7 +16,10 @@ export class RecvdController {
       body.isMentioned === '1' &&
       (body.content as string).includes('@木小博士');
     const isMsgFromSelf = body.isMsgFromSelf === '1';
-    const content = (body.content as string).replace('@木小博士', '').trim();
+    const content = (body.content as string)
+      .replace('@木小博士', '')
+      .replace(/「.*」/g, '')
+      .trim();
     let source = {} as RecvdRequestBodySource;
     try {
       console.log(body.source);
