@@ -12,14 +12,11 @@ export class RecvdController {
   @UseInterceptors(FileInterceptor('file'))
   async recvd(@Body() body: any): Promise<RecvdRes> {
     const type = body.type;
+    let content = (body.content as string).replace(/「.*」/g, '').trim();
     const isMentioned =
-      body.isMentioned === '1' &&
-      (body.content as string).includes('@木小博士');
+      body.isMentioned === '1' && content.includes('@木小博士');
+    content = content.replace('@木小博士', '');
     const isMsgFromSelf = body.isMsgFromSelf === '1';
-    const content = (body.content as string)
-      .replace('@木小博士', '')
-      .replace(/「.*」/g, '')
-      .trim();
     let source = {} as RecvdRequestBodySource;
     try {
       console.log(body.source);
