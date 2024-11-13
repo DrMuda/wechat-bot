@@ -43,16 +43,19 @@ const baseBailMoney = 1000;
 
 const getProbability = (user: string, luck: number, mainAttribute: number) => {
   const fortune = getNowFortune(user);
+  // 主属性概率
   const mainAttributeProbability =
     (mainAttribute / MaxMakeMoneyAttribute) * 0.3;
+  // 幸运概率
   const luckProbability = (luck / MaxMakeMoneyAttribute) * 0.3 + fortune;
-  const successProbability = Math.min(
-    1,
-    1 -
-      (1 - baseProbability) *
-        (1 - mainAttributeProbability) *
-        (1 - luckProbability),
-  );
+  // 失败概率
+  const failProbability =
+    (1 - baseProbability) *
+    (1 - mainAttributeProbability) *
+    (1 - luckProbability);
+  // 成功概率
+  const successProbability = Math.min(1, 1 - failProbability);
+
   return {
     successProbability,
     luckProbability,
