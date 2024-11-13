@@ -386,7 +386,7 @@ export const parseText = (text: string, user: string): RecvdRes => {
     } = makeMoneyResult;
     addMoney(Math.round(money), user);
     if (money < 0) {
-      addMoney(Math.round(money), botName);
+      addMoney(Math.round(-money), botName);
     }
     const saveData = getSaveDataByUser(user);
     const content: string[] = [];
