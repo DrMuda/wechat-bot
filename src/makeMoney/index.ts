@@ -379,7 +379,7 @@ export const parseText = (text: string, user: string): RecvdRes => {
   }
 
   if (makeMoneyResult) {
-    const {
+    let {
       levelUp = false,
       money = 0,
       success,
@@ -389,9 +389,10 @@ export const parseText = (text: string, user: string): RecvdRes => {
       otherUser,
       successProbability,
     } = makeMoneyResult;
-    addMoney(Math.round(money), user);
+    money = Math.round(money);
+    addMoney(money, user);
     if (money < 0) {
-      addMoney(Math.round(-money), botName);
+      addMoney(-money, botName);
     }
     const saveData = getSaveDataByUser(user);
     const content: string[] = [];
