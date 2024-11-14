@@ -128,7 +128,10 @@ const itinerantMerchantMakeMoney = ({
       bargainingPower,
     );
     const shouldGetMoney = Math.round(
-      cost * (0.5 + (bargainingPower / 100) * 0.3 + random(-0.3, 0.3)),
+      cost *
+        (0.8 +
+          (bargainingPower / MaxMakeMoneyAttribute) * 0.3 +
+          random(-0.3, 0.3)),
     );
     const levelUp = Math.random() < 1 / bargainingPower;
     if (Math.random() < successProbability) {
@@ -142,8 +145,11 @@ const itinerantMerchantMakeMoney = ({
     if (Math.random() < luckProbability / 2) {
       return { success: false, money: 0, levelUp, successProbability };
     }
-    const lossMoney =
-      cost * ((1 - bargainingPower / 100) / 2) + random(-0.3, 0.3);
+    const lossMoney = Math.max(
+      cost * 0.1,
+      cost *
+        (0.5 - bargainingPower / MaxMakeMoneyAttribute + random(-0.3, 0.3)),
+    );
     return {
       success: false,
       money: -lossMoney,
