@@ -142,9 +142,11 @@ const itinerantMerchantMakeMoney = ({
     if (Math.random() < luckProbability / 2) {
       return { success: false, money: 0, levelUp, successProbability };
     }
+    const lossMoney =
+      cost * ((1 - bargainingPower / 100) / 2) + random(-0.3, 0.3);
     return {
       success: false,
-      money: -shouldGetMoney,
+      money: -lossMoney,
       levelUp,
       successProbability,
     };
