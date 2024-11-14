@@ -64,7 +64,7 @@ const getProbability = (user: string, luck: number, mainAttribute: number) => {
   };
 };
 
-const baseMakeMoney = (
+const adventureMakeMoney = (
   user: string,
   luck: number,
   mainAttribute: number,
@@ -93,7 +93,7 @@ const baseMakeMoney = (
   }
   return {
     success: false,
-    money: -shouldGetMoney,
+    money: -shouldGetMoney * 0.2,
     levelUp,
     successProbability,
   };
@@ -286,7 +286,7 @@ export const makeMoney = (
   const { luck, battleStrength } = saveData;
   switch (type) {
     case Adventure: {
-      return baseMakeMoney(user, luck, battleStrength);
+      return adventureMakeMoney(user, luck, battleStrength);
     }
     case ItinerantMerchant: {
       return itinerantMerchantMakeMoney({ user, saveData, text });
