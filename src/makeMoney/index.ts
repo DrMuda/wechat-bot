@@ -194,7 +194,7 @@ const thieveryMakeMoney = ({
     (userSaveData.thieverySkills / MaxMakeMoneyAttribute) * 0.3;
   const luckProbability =
     ((userSaveData.luck - targetSaveData.luck) / MaxMakeMoneyAttribute) * 0.3 +
-    (userFortune - targetFortune) / 2;
+    (userFortune - targetFortune);
   const successProbability = Math.min(
     1,
     1 -
