@@ -318,8 +318,10 @@ const escapeFromPrison = (user: string): MakeMoneyResult => {
     saveData.luck,
     saveData.thieverySkills,
   );
+  const pryTheLockProbability = saveData.pryTheLock / MaxMakeMoneyAttribute;
   const prevEscapeFromPrison = dayjs().format('YYYY-MM-DD HH:mm:ss');
-  if (Math.random() < luckProbability / 2) {
+  const levelUp = Math.random() < 3 / saveData.pryTheLock;
+  if (Math.random() < luckProbability / 2 + pryTheLockProbability) {
     saveDataByUser(
       { releaseFromPrisonTime: prevEscapeFromPrison, prevEscapeFromPrison },
       user,
@@ -328,6 +330,7 @@ const escapeFromPrison = (user: string): MakeMoneyResult => {
       success: false,
       extra: [`越狱成功`],
       onlyExtra: true,
+      levelUp: true,
     };
   }
   saveDataByUser({ prevEscapeFromPrison }, user);
@@ -335,6 +338,7 @@ const escapeFromPrison = (user: string): MakeMoneyResult => {
     success: false,
     extra: [`越狱失败了`],
     onlyExtra: true,
+    levelUp,
   };
 };
 
@@ -379,6 +383,7 @@ export const parseText = (text: string, user: string): RecvdRes => {
     action = Keywords.Thievery;
     mainAttributeFieldName = 'thieverySkills';
   } else if (text.includes(Keywords.EscapeFromPrison)) {
+    mainAttributeFieldName = 'pryTheLock';
     makeMoneyResult = escapeFromPrison(user);
   } else if (text.includes(Keywords.Bail)) {
     makeMoneyResult = bail(user);

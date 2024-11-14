@@ -10,6 +10,7 @@ export const defaultSaveData: Required<SaveData> = {
   battleStrength: DefaultMakeMoneyAttribute,
   luck: DefaultMakeMoneyAttribute,
   thieverySkills: DefaultMakeMoneyAttribute,
+  pryTheLock: DefaultMakeMoneyAttribute,
   prevMakeMoneyTime: null,
   releaseFromPrisonTime: null,
   prevEscapeFromPrison: null,
