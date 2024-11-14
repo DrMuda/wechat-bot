@@ -76,7 +76,7 @@ const baseMakeMoney = (
   );
   // 如果赚钱成功， 理应得到的钱
   const shouldGetMoney = Math.round(
-    mainAttribute * 1000 * (1 + random(-0.3, 0.3)),
+    mainAttribute * 3000 * (1 + random(-0.3, 0.3)),
   );
   const levelUp = Math.random() < 1 / mainAttribute;
 
