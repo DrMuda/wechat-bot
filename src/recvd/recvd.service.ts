@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Keywords } from 'src/config';
+import { botName, Keywords } from 'src/config';
 import { countdown, holiday, offWork } from 'src/countdown';
 import { JingZiQiService } from 'src/jingZiQi/index.service';
 import { getMoneyRanking } from 'src/money';
@@ -51,6 +51,9 @@ export class RecvdService {
     if (content.includes(Keywords.MoneyRanking)) return getMoneyRanking();
     if (content.includes(Keywords.MyInfo) && fromUser) {
       return { success: true, data: { content: getMyInfo(fromUser) } };
+    }
+    if (content.includes(Keywords.BotInfo)) {
+      return { success: true, data: { content: getMyInfo(botName) } };
     }
 
     let res = jingZiQiService.parseText(content);

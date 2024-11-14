@@ -20,6 +20,7 @@ export const Keywords = {
   Upgrade: '升级',
   EscapeFromPrison: '越狱',
   Bail: '保释',
+  BotInfo: '机器人数据',
 } as const;
 
 // 赚钱属性最大值
@@ -36,6 +37,6 @@ export const saveDataLabelMap: Record<keyof SaveData, string> = {
   prevMakeMoneyTime: '上次赚钱时间',
   releaseFromPrisonTime: '小黑屋释放时间',
   prevEscapeFromPrison: '上次越狱时间',
-}
+};
 
 export const botName = '木小博士';
