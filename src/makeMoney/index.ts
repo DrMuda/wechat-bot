@@ -128,7 +128,7 @@ const itinerantMerchantMakeMoney = ({
       bargainingPower,
     );
     const shouldGetMoney = Math.round(
-      cost * (1 + (bargainingPower / 100) * 2 + random(-0.3, 0.3)),
+      cost * (0.5 + (bargainingPower / 100) * 0.3 + random(-0.3, 0.3)),
     );
     const levelUp = Math.random() < 1 / bargainingPower;
     if (Math.random() < successProbability) {
