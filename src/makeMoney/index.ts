@@ -108,7 +108,7 @@ const itinerantMerchantMakeMoney = ({
   saveData: Required<SaveData>;
   text: string;
 }): MakeMoneyResult => {
-  const regExp = new RegExp(`${Keywords.ItinerantMerchant}([1-9][0-9]{0,6})`);
+  const regExp = new RegExp(`${Keywords.ItinerantMerchant}([1-9][0-9]{0,8})`);
   const match = text.match(regExp);
   if (match?.[1]) {
     const cost = Number(match[1]);
