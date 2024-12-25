@@ -6,8 +6,9 @@ import {
 } from 'src/saveData';
 import _dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
-import { saveDataLabelMap } from 'src/config';
-import { SaveData } from 'src/utils/type';
+import { configPath, saveDataDir, saveDataLabelMap } from 'src/config';
+import { IConfig, SaveData } from 'src/utils/type';
+import * as fs from 'fs';
 
 const dayjs = require('dayjs') as typeof _dayjs;
 
@@ -46,6 +47,23 @@ export const sendMsgToWx = ({
   return axios.post('http://localhost:3001/webhook/msg/v2?token=YpIZOxT77sGR', {
     to,
     data: { content },
+    isRoom,
+  });
+};
+
+export const sendPicToWx = ({
+  picPath,
+  isRoom,
+  to,
+}: {
+  to: string;
+  isRoom: boolean;
+  picPath: string;
+}) => {
+  if (process.env.NODE_ENV === 'develop') return Promise.resolve();
+  return axios.post('http://localhost:3001/webhook/msg/v2?token=YpIZOxT77sGR', {
+    to,
+    data: { type: 'fileUrl', content: picPath },
     isRoom,
   });
 };
@@ -104,7 +122,22 @@ export const getNowFortune = (user: string): number => {
   return random(-0.4, 0.6, seed);
 };
 
-export const defaultCatchFetch = (error: unknown)=>{
-  console.error(error)
-  return null
-}
+export const defaultCatchFetch = (error: unknown) => {
+  console.error(error);
+  return null;
+};
+
+export const getConfig = () => {
+  if (!fs.existsSync(saveDataDir)) {
+    fs.mkdirSync(saveDataDir);
+  }
+  if (!fs.existsSync(configPath)) {
+    fs.writeFileSync(configPath, '{}', { encoding: 'utf-8' });
+  }
+  const fileContent = fs.readFileSync(configPath, { encoding: 'utf-8' });
+  try {
+    return JSON.parse(fileContent) as IConfig;
+  } catch {
+    return {} as IConfig;
+  }
+};

@@ -82,3 +82,7 @@ export interface RecvdRequestBodySource {
     };
   };
 }
+
+export interface IConfig{
+  refreshToken?: string
+}

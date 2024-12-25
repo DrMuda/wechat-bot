@@ -2,6 +2,7 @@ import { SaveData } from 'src/utils/type';
 
 export const isDev = process.env.NODE_ENV === 'develop';
 export const saveDataDir = isDev ? './wechat-bot-data' : '/wechat-bot-data';
+export const configPath = `${saveDataDir}/config.json`;
 
 export const Keywords = {
   MoneyRanking: '金币排行榜',
@@ -21,6 +22,7 @@ export const Keywords = {
   EscapeFromPrison: '越狱',
   Bail: '保释',
   BotInfo: '机器人数据',
+  SearchPic: '搜图',
 } as const;
 
 // 赚钱属性最大值

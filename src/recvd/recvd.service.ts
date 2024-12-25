@@ -7,6 +7,7 @@ import { TwentyOnePoint } from 'src/twentyOnePoint';
 import { getMyInfo } from 'src/utils';
 import { parseText as makeMoneyParseText } from 'src/makeMoney';
 import { parseText as upgradeParseText } from 'src/upgrade';
+import { searchPic } from 'src/pixiv';
 
 export interface RecvdRes {
   success: boolean;
@@ -54,6 +55,18 @@ export class RecvdService {
     }
     if (content.includes(Keywords.BotInfo)) {
       return { success: true, data: { content: getMyInfo(botName) } };
+    }
+    console.log(Keywords.SearchPic);
+    if (content.includes(Keywords.SearchPic)) {
+      // console.log('搜图=====', { content });
+      searchPic({
+        isRoom,
+        content: content.replace(Keywords.SearchPic, ''),
+        roomName,
+        fromUser,
+      });
+      // 这里不直接响应， 由searchPic主动发送图片
+      return { success: false };
     }
 
     let res = jingZiQiService.parseText(content);

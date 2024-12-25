@@ -4,6 +4,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { RecvdRequestBodySource } from 'src/utils/type';
 import { dailySignIn } from 'src/utils';
 
+const dayjs = require('dayjs');
+
 @Controller()
 export class RecvdController {
   constructor(private readonly appService: RecvdService) {}
@@ -19,7 +21,6 @@ export class RecvdController {
     const isMsgFromSelf = body.isMsgFromSelf === '1';
     let source = {} as RecvdRequestBodySource;
     try {
-      console.log(body.source);
       source = JSON.parse(body.source);
     } catch (error) {
       console.error('source 解析失败', error);
@@ -33,7 +34,7 @@ export class RecvdController {
 
     dailySignIn(roomUsers);
 
-    return this.appService.router({
+    const config = {
       type,
       isMentioned,
       isMsgFromSelf,
@@ -42,6 +43,9 @@ export class RecvdController {
       fromUser,
       roomUsers,
       roomName,
-    });
+    };
+    console.log(dayjs().format('YYYY/MM/DD HH:mm:ss'), config);
+
+    return this.appService.router(config);
   }
 }
