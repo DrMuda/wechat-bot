@@ -8,11 +8,14 @@ import _dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { configPath, saveDataDir, saveDataLabelMap } from 'src/config';
 import { IConfig, SaveData } from 'src/utils/type';
-import * as fs from 'fs';
-import { File, Blob } from 'buffer';
-import * as FormData from 'form-data';
+// import * as fs from 'fs';
+// import { File, Blob } from 'buffer';
+// import * as FormData from 'form-data';
 
 const dayjs = require('dayjs') as typeof _dayjs;
+const fs = require('fs');
+const FormData = require('form-data');
+const { File, Blob } = require('buffer');
 
 let prevSignInTime: Dayjs = dayjs('2024-01-01');
 
