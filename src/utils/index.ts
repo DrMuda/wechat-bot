@@ -9,7 +9,7 @@ import axios from 'axios';
 import { configPath, saveDataDir, saveDataLabelMap } from 'src/config';
 import { IConfig, SaveData } from 'src/utils/type';
 import * as fs from 'fs';
-import FormData from 'form-data';
+import * as path from 'path';
 
 const dayjs = require('dayjs') as typeof _dayjs;
 
@@ -62,13 +62,31 @@ export const sendPicToWx = ({
   picPath: string;
 }) => {
   if (process.env.NODE_ENV === 'develop') return Promise.resolve();
+
+  const fileExtension = path.extname(picPath).toLowerCase();
+
+  // 识别 MIME 类型
+  const mimeTypes: Record<string, string> = {
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.bmp': 'image/bmp',
+    '.svg': 'image/svg+xml',
+  };
+
+  // 读取文件为 Buffer
   const fileBuffer = fs.readFileSync(picPath);
-  // const file = new File([fileBuffer], picPath.split('/').at(-1) || '图片.png');
+  const mimeType = mimeTypes[fileExtension] || 'application/octet-stream'; // 默认类型为二进制流
+
+  // 转换为 Blob
+  const blob = new Blob([fileBuffer], { type: mimeType });
 
   const formData = new FormData();
   formData.append('to', to);
   formData.append('isRoom', (isRoom ? 1 : 0).toString());
-  formData.append('content', fileBuffer);
+  formData.append('content', blob);
 
   return axios.post(
     'http://localhost:3001/webhook/msg?token=YpIZOxT77sGR',
