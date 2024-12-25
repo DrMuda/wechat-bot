@@ -35,13 +35,16 @@ export const searchPic = async ({
     return;
   }
   for (const picPath of picPathList!) {
-    console.log(`发送图片， ${picPath}, ${(isRoom ? roomName : fromUser)}`);
+    console.log(`发送图片， ${picPath}, ${isRoom ? roomName : fromUser}`);
     const res = await sendPicToWx({
       isRoom,
       to: (isRoom ? roomName : fromUser) || '',
       picPath,
     });
-    console.log(res);
+    if (res?.data?.success !== true) {
+      console.log(res!.data.message);
+      console.log(JSON.stringify(res!.data.task));
+    }
   }
 };
 
