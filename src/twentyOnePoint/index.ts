@@ -1,6 +1,6 @@
 import { addMoney } from 'src/money';
 import { getSaveDataByUser } from 'src/saveData';
-import { getNowFortune, sendMsgToWx, waitTime } from 'src/utils';
+import { defaultCatchFetch, getNowFortune, sendMsgToWx, waitTime } from 'src/utils';
 import { RecvdRes } from 'src/utils/type';
 import { botName, Keywords as GlobalKeywords } from 'src/config';
 
@@ -70,7 +70,7 @@ export class TwentyOnePoint {
           to: roomName,
           isRoom: true,
           content: '21点游戏已超时结束',
-        });
+        }).catch(defaultCatchFetch);
       },
       2 * 60 * 1000,
     );
@@ -142,7 +142,7 @@ export class TwentyOnePoint {
           content: `已调整赌注为${bet}`,
           isRoom: true,
           to: roomName,
-        });
+        }).catch(defaultCatchFetch);;
 
         this.runningStep = 'turning';
         this.resetPokerList();
@@ -208,7 +208,7 @@ export class TwentyOnePoint {
           content: `机器人选择了${botDecision}`,
           to: roomName,
           isRoom: true,
-        }).catch(() => null);
+        }).catch(defaultCatchFetch);
         const { success, data } = await this.router(
           botDecision,
           botName,
@@ -220,7 +220,7 @@ export class TwentyOnePoint {
             content: data?.content || '',
             isRoom: true,
             to: roomName,
-          });
+          }).catch(defaultCatchFetch);;
         }
       }, 0);
 
@@ -549,7 +549,7 @@ export class TwentyOnePoint {
             to: roomName,
             isRoom: true,
             content: res.data?.content || '',
-          });
+          }).catch(defaultCatchFetch);;
         }
       };
       if (user === this.userA) {
@@ -567,7 +567,7 @@ export class TwentyOnePoint {
           to: roomName,
           isRoom: true,
           content: res.data?.content || '',
-        });
+        }).catch(defaultCatchFetch);;
       }
       this.checkoutAndRenderHandPoker();
     }

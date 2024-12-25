@@ -42,16 +42,12 @@ export const sendMsgToWx = ({
   isRoom: boolean;
   content: string;
 }) => {
-  console.log(content);
   if (process.env.NODE_ENV === 'develop') return Promise.resolve();
-  return axios.post(
-    'http://wxBotWebhook:3001/webhook/msg/v2?token=YpIZOxT77sGR',
-    {
-      to,
-      data: { content },
-      isRoom,
-    },
-  );
+  return axios.post('http://localhost:3001/webhook/msg/v2?token=YpIZOxT77sGR', {
+    to,
+    data: { content },
+    isRoom,
+  });
 };
 
 export const waitTime = async (timeout: number) => {
@@ -107,3 +103,8 @@ export const getNowFortune = (user: string): number => {
     dayjs().hour();
   return random(-0.4, 0.6, seed);
 };
+
+export const defaultCatchFetch = (error: unknown)=>{
+  console.error(error)
+  return null
+}
