@@ -9,6 +9,7 @@ import axios from 'axios';
 import { configPath, saveDataDir, saveDataLabelMap } from 'src/config';
 import { IConfig, SaveData } from 'src/utils/type';
 import * as fs from 'fs';
+import FormData from 'form-data';
 
 const dayjs = require('dayjs') as typeof _dayjs;
 
@@ -62,12 +63,12 @@ export const sendPicToWx = ({
 }) => {
   if (process.env.NODE_ENV === 'develop') return Promise.resolve();
   const fileBuffer = fs.readFileSync(picPath);
-  const file = new File([fileBuffer], picPath.split('/').at(-1) || '图片.png');
+  // const file = new File([fileBuffer], picPath.split('/').at(-1) || '图片.png');
 
   const formData = new FormData();
   formData.append('to', to);
   formData.append('isRoom', (isRoom ? 1 : 0).toString());
-  formData.append('content', file);
+  formData.append('content', fileBuffer);
 
   return axios.post(
     'http://localhost:3001/webhook/msg?token=YpIZOxT77sGR',
