@@ -43,7 +43,7 @@ export const searchPic = async ({
     });
     if (res?.data?.success !== true) {
       console.log(res!.data.message);
-      console.log(JSON.stringify(res!.data.task));
+      console.log(JSON.stringify(res));
     }
   }
 };
