@@ -10,6 +10,7 @@ docker build -t wechat-bot .
 docker run -d --name wechat-bot --network host -v /www/wwwroot/wechat-bot-data:/wechat-bot-data wechat-bot
 
 docker run -d --name wxBotWebhook \
+-p 3001:3001 \
 --network host \
 -v /www/wwwroot/wechat-bot-data:/wechat-bot-data \
 -v ~/wxBot_logs:/app/log \

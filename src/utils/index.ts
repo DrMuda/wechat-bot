@@ -61,11 +61,23 @@ export const sendPicToWx = ({
   picPath: string;
 }) => {
   if (process.env.NODE_ENV === 'develop') return Promise.resolve();
-  return axios.post('http://localhost:3001/webhook/msg/v2?token=YpIZOxT77sGR', {
-    to,
-    data: { type: 'fileUrl', content: picPath },
-    isRoom,
-  });
+  const fileBuffer = fs.readFileSync(picPath);
+  const file = new File([fileBuffer], picPath.split('/').at(-1) || '图片.png');
+
+  const formData = new FormData();
+  formData.append('to', to);
+  formData.append('isRoom', (isRoom ? 1 : 0).toString());
+  formData.append('content', file);
+
+  return axios.post(
+    'http://localhost:3001/webhook/msg?token=YpIZOxT77sGR',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    },
+  );
 };
 
 export const waitTime = async (timeout: number) => {
