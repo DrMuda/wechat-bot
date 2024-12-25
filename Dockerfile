@@ -4,9 +4,9 @@ WORKDIR /app
 
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
-RUN npm config set registry http://mirrors.cloud.tencent.com/npm/
+RUN npm config set registry https://registry.npmmirror.com
 RUN npm add pnpm -g
-RUN pnpm config set registry http://mirrors.cloud.tencent.com/npm/
+RUN pnpm config set registry https://registry.npmmirror.com
 RUN pnpm i
 
 # Rebuild the source code only when needed
