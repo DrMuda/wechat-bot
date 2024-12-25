@@ -9,7 +9,8 @@ import axios from 'axios';
 import { configPath, saveDataDir, saveDataLabelMap } from 'src/config';
 import { IConfig, SaveData } from 'src/utils/type';
 import * as fs from 'fs';
-import * as path from 'path';
+import { File } from 'buffer';
+import FormData from 'form-data';
 
 const dayjs = require('dayjs') as typeof _dayjs;
 
