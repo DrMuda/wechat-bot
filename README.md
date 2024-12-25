@@ -9,9 +9,10 @@ curl --location 'http://127.0.0.1:3000/recvd' \
 docker build -t wechat-bot .
 docker run -d --name wechat-bot --network host -v /www/wwwroot/wechat-bot-data:/wechat-bot-data wechat-bot
 
-docker run -d --name wxBotWebhook -p 3001:3001 \
+docker run -d --name wxBotWebhook \
 --network host \
+-v /www/wwwroot/wechat-bot-data:/wechat-bot-data \
 -v ~/wxBot_logs:/app/log \
--e RECVD_MSG_API=http://wechat-bot:3000/recvd \
+-e RECVD_MSG_API=http://localhost:3000/recvd \
 -e LOCAL_LOGIN_API_TOKEN=YpIZOxT77sGR \
 dannicool/docker-wechatbot-webhook

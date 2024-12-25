@@ -130,7 +130,7 @@ export class PixivUtil {
       success: true,
       picPathList: allFileNameList
         .slice(0, count)
-        .map((fileName) => `${path}/${fileName}`),
+        .map((fileName) => `file://${path}/${fileName}`),
     };
   }
 }
