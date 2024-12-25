@@ -16,9 +16,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN npm config set registry http://mirrors.cloud.tencent.com/npm/
+RUN npm config set registry https://registry.npmmirror.com
 RUN npm add pnpm -g
-RUN pnpm config set registry http://mirrors.cloud.tencent.com/npm/
+RUN pnpm config set registry https://registry.npmmirror.com
 RUN pnpm build
 
 # Final stage: run the application
