@@ -67,14 +67,14 @@ export const sendPicToWx = ({
   // 读取文件为 Buffer
   const fileBuffer = fs.readFileSync(picPath);
 
-  // 转换为 Blob
-  const blob = new Blob([fileBuffer], { type: 'image/png' });
-  const file = new File([fileBuffer], '图片.png');
+  // // 转换为 Blob
+  // const blob = new Blob([fileBuffer], { type: 'image/png' });
+  // const file = new File([fileBuffer], '图片.png');
 
   const formData = new FormData();
   formData.append('to', to);
   formData.append('isRoom', (isRoom ? 1 : 0).toString());
-  formData.append('content', file);
+  formData.append('content', fileBuffer);
 
   return axios.post(
     'http://localhost:3001/webhook/msg?token=YpIZOxT77sGR',
