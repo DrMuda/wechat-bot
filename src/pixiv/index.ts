@@ -86,7 +86,11 @@ export class PixivUtil {
       return { success: false, error: 'pixiv登录失败' };
     }
 
-    let [word, count] = text.split('.') as [string, string | number];
+    let [word, count, userId] = text.split('.') as [
+      string,
+      string | number,
+      string,
+    ];
     count = Math.max(Number(count) || 1, 1);
 
     // 获取插画并按照收藏数倒序
@@ -94,8 +98,8 @@ export class PixivUtil {
       .illusts({
         word,
         r18: false,
-        sort: 'popular_desc',
-        bookmarks: '50',
+        mode: 'month',
+        user_id: Number(userId) || undefined,
       })
       .catch(defaultCatchFetch);
     if (!illusts) return { success: false, error: '搜图失败' };
