@@ -154,63 +154,22 @@ export class PixivUtil {
       return pixiv.util.downloadIllust(illust, path, 'large');
     });
 
-    let picPathList: string[] = [];
-    let allFileNameList: string[] = [];
-    await new Promise<void>(async (resolve, reject) => {
-      let isDownloadEnd = false;
-      Promise.allSettled(downloadList).finally(() => {
-        // 如果下载先于检查结束， 直接取出合适的插画
-        allFileNameList = fs.readdirSync(path);
-        // 文件名大概是 125483049_p0.png， 前面是作品id 根据 p 几排序， 让全部图片， p0 在前， p1、p2、p3在后， 这样先取各作品id的第一张， 不够再取其余的
-        allFileNameList = allFileNameList.sort((aFileName, bFileName) => {
-          const [, aPIndexStr = 'p0'] = aFileName.split('.')[0].split('_');
-          const [, bPIndexStr = 'p0'] = bFileName.split('.')[0].split('_');
-          const aPIndex = Number(aPIndexStr.replace('p', ''));
-          const bPIndex = Number(bPIndexStr.replace('p', ''));
-          return aPIndex - bPIndex;
-        });
-        picPathList = allFileNameList
-          .slice(0, count)
-          .map((fileName) => `${path}/${fileName}`);
-        isDownloadEnd = true;
-        resolve();
-      });
-      // 下载过程中每半秒检查一下下载情况， 如果有足够的图片则提前停止等待下载
-      while (!isDownloadEnd) {
-        allFileNameList = fs.readdirSync(path);
-        const existsId = new Set();
-        // 文件名大概是 125483049_p0.png， 前面是作品id 根据 p 几排序， 让全部图片， p0 在前， p1、p2、p3在后， 这样先取各作品id的第一张， 不够再取其余的
-        allFileNameList = allFileNameList.sort((aFileName, bFileName) => {
-          const [aId, aPIndexStr = 'p0'] = aFileName.split('.')[0].split('_');
-          const [bId, bPIndexStr = 'p0'] = bFileName.split('.')[0].split('_');
-          const aPIndex = Number(aPIndexStr.replace('p', ''));
-          const bPIndex = Number(bPIndexStr.replace('p', ''));
-          existsId.add(aId);
-          existsId.add(bId);
-          return aPIndex - bPIndex;
-        });
-        picPathList = allFileNameList
-          .slice(0, count)
-          .map((fileName) => `${path}/${fileName}`);
-        await waitTime(500);
-
-        // 全部作品id 数量会等于illustForDownload数量， 等到各作品都开始下载再判断文件是否有效
-        if (existsId.size < illustForDownload.length) continue;
-
-        // 判断选中的文件是否均有效, 暂时以文件大小是否超过10KB为准
-        let isValid = true;
-        picPathList.forEach((path) => {
-          const fileBuffer = fs.readFileSync(path);
-          if (fileBuffer.length < 10 * 1024) {
-            isValid = false;
-          }
-        });
-        if (isValid) break;
-      }
-
-      resolve();
-    });
+    await Promise.allSettled(downloadList);
     console.log('图片下载完毕');
+
+    let allFileNameList = fs.readdirSync(path);
+    // 文件名大概是 125483049_p0.png， 前面是作品id 根据 p 几排序， 让全部图片， p0 在前， p1、p2、p3在后， 这样先取各作品id的第一张， 不够再取其余的
+    allFileNameList = allFileNameList.sort((aFileName, bFileName) => {
+      const [, aPIndexStr = 'p0'] = aFileName.split('.')[0].split('_');
+      const [, bPIndexStr = 'p0'] = bFileName.split('.')[0].split('_');
+      const aPIndex = Number(aPIndexStr.replace('p', ''));
+      const bPIndex = Number(bPIndexStr.replace('p', ''));
+      return aPIndex - bPIndex;
+    });
+
+    let picPathList = allFileNameList
+      .slice(0, count)
+      .map((fileName) => `${path}/${fileName}`);
 
     const tagsSet = new Set<string>();
     illustForDownload.forEach(({ tags }) => {
