@@ -8,14 +8,11 @@ import _dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { configPath, saveDataDir, saveDataLabelMap } from 'src/config';
 import { IConfig, SaveData } from 'src/utils/type';
-// import * as fs from 'fs';
-// import { File, Blob } from 'buffer';
-// import * as FormData from 'form-data';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as FormData from 'form-data';
 
 const dayjs = require('dayjs') as typeof _dayjs;
-const fs = require('fs');
-const FormData = require('form-data');
-const { File, Blob } = require('buffer');
 
 let prevSignInTime: Dayjs = dayjs('2024-01-01');
 
@@ -69,15 +66,27 @@ export const sendPicToWx = ({
 
   // 读取文件为 Buffer
   const fileBuffer = fs.readFileSync(picPath);
+  const fileExtension = path.extname(picPath).toLowerCase();
+  const fileName = path.basename(picPath);
 
-  // // 转换为 Blob
-  const blob = new Blob([fileBuffer], { type: 'image/png' });
-  // const file = new File([fileBuffer], '图片.png');
+  // 识别 MIME 类型
+  const mimeTypes: Record<string, string> = {
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.bmp': 'image/bmp',
+    '.svg': 'image/svg+xml',
+  };
 
   const formData = new FormData();
   formData.append('to', to);
   formData.append('isRoom', (isRoom ? 1 : 0).toString());
-  formData.append('content', blob);
+  formData.append('content', fileBuffer, {
+    filename: fileName,
+    contentType: mimeTypes[fileExtension],
+  });
 
   return axios.post(
     'http://localhost:3001/webhook/msg?token=YpIZOxT77sGR',

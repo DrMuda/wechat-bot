@@ -89,6 +89,7 @@ export class PixivUtil {
       .illusts({
         word,
         r18: false,
+        sort: 'popular_desc',
       })
       .catch(defaultCatchFetch);
     if (!illusts) return { success: false, error: '搜图失败' };
