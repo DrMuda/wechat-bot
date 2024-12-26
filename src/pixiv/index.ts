@@ -184,4 +184,36 @@ export class PixivUtil {
       tags: Array.from(tagsSet),
     };
   }
+
+  public static async getDailyTop1(): Promise<{
+    success: boolean;
+    error?: string;
+    picPathList?: string[];
+    tags?: string[];
+  }> {
+    if (!PixivUtil.pixiv) {
+      await PixivUtil.init();
+    }
+    if (!PixivUtil.pixiv) {
+      return { success: false, error: 'pixiv登录失败' };
+    }
+    const pixiv = PixivUtil.pixiv;
+    const illusts = await pixiv.illust.ranking({
+      mode: 'day_female',
+      r18: false,
+    });
+
+    const timeStamp = isDev ? 'test' : Date.now();
+    const path = `${pixivIllustSavePath}/${timeStamp}`;
+    if (!illusts || !illusts[0]) {
+      return { success: false, error: '查找排行榜失败' };
+    }
+
+    await pixiv.util.downloadIllust(illusts[0], path, 'large');
+    console.log('下载每日排行top1完成');
+
+    let allFileNameList = fs.readdirSync(path);
+    let picPathList = allFileNameList.map((fileName) => `${path}/${fileName}`);
+    return { success: true, picPathList: picPathList };
+  }
 }
