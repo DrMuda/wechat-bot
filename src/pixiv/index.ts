@@ -126,8 +126,8 @@ export class PixivUtil {
     let allFileNameList = fs.readdirSync(path);
     // 文件名大概是 125483049_p0.png， 前面是作品id 根据 p 几排序， 让全部图片， p0 在前， p1、p2、p3在后， 这样先取各作品id的第一张， 不够再取其余的
     allFileNameList = allFileNameList.sort((aFileName, bFileName) => {
-      const [, aPIndexStr] = aFileName.split('.')[0].split('_');
-      const [, bPIndexStr] = bFileName.split('.')[0].split('_');
+      const [, aPIndexStr = 'p0'] = aFileName.split('.')[0].split('_');
+      const [, bPIndexStr = 'p0'] = bFileName.split('.')[0].split('_');
       const aPIndex = Number(aPIndexStr.replace('p', ''));
       const bPIndex = Number(bPIndexStr.replace('p', ''));
       return aPIndex - bPIndex;
