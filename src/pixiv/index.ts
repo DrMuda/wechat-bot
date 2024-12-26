@@ -42,8 +42,13 @@ export const searchPic = async ({
       picPath,
     });
     if (res?.data?.success !== true) {
-      console.log(res!.data.message);
-      console.log(JSON.stringify(res));
+      try {
+        console.log('发送图报错了==================');
+        console.log(res?.data.message);
+        console.log(JSON.stringify(res));
+      } catch (error) {
+        console.log(res);
+      }
     }
   }
 };
@@ -90,6 +95,7 @@ export class PixivUtil {
         word,
         r18: false,
         sort: 'popular_desc',
+        bookmarks: '50',
       })
       .catch(defaultCatchFetch);
     if (!illusts) return { success: false, error: '搜图失败' };
@@ -112,7 +118,7 @@ export class PixivUtil {
       if (!fs.existsSync(path)) {
         fs.mkdir(path, () => {});
       }
-      return PixivUtil.pixiv?.util.downloadIllust(illust, path, 'medium');
+      return PixivUtil.pixiv?.util.downloadIllust(illust, path, 'large');
     });
     await Promise.allSettled(downLoadList);
     console.log('图片下载完毕');
