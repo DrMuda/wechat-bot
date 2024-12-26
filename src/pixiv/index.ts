@@ -1,4 +1,4 @@
-import Pixiv from 'pixiv.ts';
+import Pixiv, { PixivIllust } from 'pixiv.ts';
 import { isDev, saveDataDir } from 'src/config';
 import {
   defaultCatchFetch,
@@ -6,8 +6,11 @@ import {
   random,
   sendMsgToWx,
   sendPicToWx,
+  waitTime,
 } from 'src/utils';
 import * as fs from 'fs';
+
+const dayjs = require('dayjs');
 
 export const pixivIllustSavePath = `${saveDataDir}/illust`;
 
@@ -22,9 +25,10 @@ export const searchPic = async ({
   roomName?: string;
   fromUser?: string;
 }) => {
-  const { success, error, picPathList } = await PixivUtil.searchAndDownloadPic({
-    text: content,
-  });
+  const { success, error, picPathList, tags } =
+    await PixivUtil.searchAndDownloadPic({
+      text: content,
+    });
   if (!success) {
     console.error(error);
     sendMsgToWx({
@@ -34,11 +38,18 @@ export const searchPic = async ({
     });
     return;
   }
+  const sendParams = { isRoom, to: (isRoom ? roomName : fromUser) || '' };
+  if (tags) {
+    console.log(['包含的tag', tags.join(', ')].join('\n'));
+    sendMsgToWx({
+      ...sendParams,
+      content: ['包含的tag', tags.join(', ')].join('\n'),
+    });
+  }
   for (const picPath of picPathList!) {
     console.log(`发送图片， ${picPath}, ${isRoom ? roomName : fromUser}`);
     const res = await sendPicToWx({
-      isRoom,
-      to: (isRoom ? roomName : fromUser) || '',
+      ...sendParams,
       picPath,
     });
     if (res?.data?.success !== true) {
@@ -78,32 +89,47 @@ export class PixivUtil {
     text,
   }: {
     text: string;
-  }): Promise<{ success: boolean; error?: string; picPathList?: string[] }> {
+  }): Promise<{
+    success: boolean;
+    error?: string;
+    picPathList?: string[];
+    tags?: string[];
+  }> {
     if (!PixivUtil.pixiv) {
       await PixivUtil.init();
     }
     if (!PixivUtil.pixiv) {
       return { success: false, error: 'pixiv登录失败' };
     }
+    const pixiv = PixivUtil.pixiv;
 
-    let [word, count, userId] = text.split('.') as [
-      string,
-      string | number,
-      string,
-    ];
+    let [word, countAndLimit] = text.split('.');
+    let [count, limit] = countAndLimit.split('/') as (string | number)[];
+    console.log(word, count, limit);
     count = Math.max(Number(count) || 1, 1);
+    limit = Math.max(Number(limit) || 1, 30);
+    console.log(word, count, limit);
 
     // 获取插画并按照收藏数倒序
-    let illusts = await PixivUtil.pixiv.search
+    let illusts = await pixiv.search
       .illusts({
         word,
         r18: false,
-        mode: 'month',
-        user_id: Number(userId) || undefined,
+        end_date: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
+        start_date: dayjs().subtract(10, 'year').format('YYYY-MM-DD'),
       })
       .catch(defaultCatchFetch);
-    if (!illusts) return { success: false, error: '搜图失败' };
-    illusts = PixivUtil.pixiv.util.sort(illusts);
+    if (!illusts || illusts.length < 0) {
+      return { success: false, error: '搜图失败' };
+    }
+    console.log(pixiv.search.nextURL);
+    if (pixiv.search.nextURL) {
+      illusts = await pixiv.util.multiCall(
+        { next_url: pixiv.search.nextURL, illusts },
+        Math.ceil(limit / 30),
+      );
+    }
+    illusts = pixiv.util.sort(illusts);
     console.log(`查询到作品${illusts.length}个`);
 
     // 从列表中的前三分之一的图随机取几张图
@@ -115,33 +141,88 @@ export class PixivUtil {
       }
     }
 
+    const illustForDownload: PixivIllust[] = [];
     const timeStamp = isDev ? 'test' : Date.now();
     const path = `${pixivIllustSavePath}/${timeStamp}`;
-    const downLoadList = indexList.map((index) => {
+    const downloadList = indexList.map((index) => {
       const illust = illusts[index];
+      if (!illust) return;
+      illustForDownload.push(illust);
       if (!fs.existsSync(path)) {
         fs.mkdir(path, () => {});
       }
-      return PixivUtil.pixiv?.util.downloadIllust(illust, path, 'large');
+      return pixiv.util.downloadIllust(illust, path, 'large');
     });
-    await Promise.allSettled(downLoadList);
+
+    let picPathList: string[] = [];
+    let allFileNameList: string[] = [];
+    await new Promise<void>(async (resolve, reject) => {
+      let isDownloadEnd = false;
+      Promise.allSettled(downloadList).finally(() => {
+        // 如果下载先于检查结束， 直接取出合适的插画
+        allFileNameList = fs.readdirSync(path);
+        // 文件名大概是 125483049_p0.png， 前面是作品id 根据 p 几排序， 让全部图片， p0 在前， p1、p2、p3在后， 这样先取各作品id的第一张， 不够再取其余的
+        allFileNameList = allFileNameList.sort((aFileName, bFileName) => {
+          const [, aPIndexStr = 'p0'] = aFileName.split('.')[0].split('_');
+          const [, bPIndexStr = 'p0'] = bFileName.split('.')[0].split('_');
+          const aPIndex = Number(aPIndexStr.replace('p', ''));
+          const bPIndex = Number(bPIndexStr.replace('p', ''));
+          return aPIndex - bPIndex;
+        });
+        picPathList = allFileNameList
+          .slice(0, count)
+          .map((fileName) => `${path}/${fileName}`);
+        isDownloadEnd = true;
+        resolve();
+      });
+      // 下载过程中每半秒检查一下下载情况， 如果有足够的图片则提前停止等待下载
+      while (!isDownloadEnd) {
+        allFileNameList = fs.readdirSync(path);
+        const existsId = new Set();
+        // 文件名大概是 125483049_p0.png， 前面是作品id 根据 p 几排序， 让全部图片， p0 在前， p1、p2、p3在后， 这样先取各作品id的第一张， 不够再取其余的
+        allFileNameList = allFileNameList.sort((aFileName, bFileName) => {
+          const [aId, aPIndexStr = 'p0'] = aFileName.split('.')[0].split('_');
+          const [bId, bPIndexStr = 'p0'] = bFileName.split('.')[0].split('_');
+          const aPIndex = Number(aPIndexStr.replace('p', ''));
+          const bPIndex = Number(bPIndexStr.replace('p', ''));
+          existsId.add(aId);
+          existsId.add(bId);
+          return aPIndex - bPIndex;
+        });
+        picPathList = allFileNameList
+          .slice(0, count)
+          .map((fileName) => `${path}/${fileName}`);
+        await waitTime(500);
+
+        // 全部作品id 数量会等于illustForDownload数量， 等到各作品都开始下载再判断文件是否有效
+        if (existsId.size < illustForDownload.length) continue;
+
+        // 判断选中的文件是否均有效, 暂时以文件大小是否超过10KB为准
+        let isValid = true;
+        picPathList.forEach((path) => {
+          const fileBuffer = fs.readFileSync(path);
+          if (fileBuffer.length < 10 * 1024) {
+            isValid = false;
+          }
+        });
+        if (isValid) break;
+      }
+
+      resolve();
+    });
     console.log('图片下载完毕');
 
-    let allFileNameList = fs.readdirSync(path);
-    // 文件名大概是 125483049_p0.png， 前面是作品id 根据 p 几排序， 让全部图片， p0 在前， p1、p2、p3在后， 这样先取各作品id的第一张， 不够再取其余的
-    allFileNameList = allFileNameList.sort((aFileName, bFileName) => {
-      const [, aPIndexStr = 'p0'] = aFileName.split('.')[0].split('_');
-      const [, bPIndexStr = 'p0'] = bFileName.split('.')[0].split('_');
-      const aPIndex = Number(aPIndexStr.replace('p', ''));
-      const bPIndex = Number(bPIndexStr.replace('p', ''));
-      return aPIndex - bPIndex;
+    const tagsSet = new Set<string>();
+    illustForDownload.forEach(({ tags }) => {
+      tags.forEach(({ name, translated_name }) => {
+        tagsSet.add(`${name}[${translated_name}]`);
+      });
     });
 
     return {
       success: true,
-      picPathList: allFileNameList
-        .slice(0, count)
-        .map((fileName) => `${path}/${fileName}`),
+      picPathList,
+      tags: Array.from(tagsSet),
     };
   }
 }
