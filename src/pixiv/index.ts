@@ -74,6 +74,7 @@ export class PixivUtil {
       console.error('缺少 refreshToken');
       return;
     }
+    console.log('登录pixiv', refreshToken);
     const pixiv = await Pixiv.refreshLogin(refreshToken).catch((error) => {
       console.log(error);
       return null;
@@ -198,18 +199,32 @@ export class PixivUtil {
       return { success: false, error: 'pixiv登录失败' };
     }
     const pixiv = PixivUtil.pixiv;
-    const illusts = await pixiv.illust.ranking({
-      mode: 'day_female',
-      r18: false,
-    });
+    console.log(
+      '搜图中',
+    );
+    const illusts = await pixiv.illust
+      .ranking({
+        mode: 'day_male_r18',
+        r18: false,
+        type: 'illust',
+      })
+      .catch(() => null);
+    console.log('搜图结束');
 
-    const timeStamp = isDev ? 'test' : Date.now();
+    const timeStamp = Date.now();
     const path = `${pixivIllustSavePath}/${timeStamp}`;
     if (!illusts || !illusts[0]) {
       return { success: false, error: '查找排行榜失败' };
     }
-
-    await pixiv.util.downloadIllust(illusts[0], path, 'large');
+    console.log(illusts[0].url);
+    try {
+      if (!fs.existsSync(path)) {
+        fs.mkdir(path, () => {});
+      }
+      await pixiv.util.downloadIllust(illusts[0], path, 'large');
+    } catch (error) {
+      console.error('图片下载失败');
+    }
     console.log('下载每日排行top1完成');
 
     let allFileNameList = fs.readdirSync(path);

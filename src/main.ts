@@ -23,22 +23,24 @@ async function bootstrap() {
     async () => {
       const maxTry = 10;
       for (let i = 0; i < maxTry; i++) {
-        const { success, picPathList } = await PixivUtil.getDailyTop1();
+        const { success, picPathList, error } = await PixivUtil.getDailyTop1();
         if (success && picPathList?.[0]) {
           const res = await sendPicToWx({
             isRoom: true,
-            to: '一个群',
+            to: '守法八代目',
             picPath: picPathList[0],
           }).catch(defaultCatchFetch);
           if (res?.data?.success === true) {
             break;
           }
+        }else{
+          console.log(error)
         }
         await waitTime(1000);
         console.log(`重试${i + 1}次`);
       }
     },
-    { time: '18:52:00' },
+    { time: '9:30:00' },
   );
   dailySendPixivTop1.start();
 }
