@@ -103,7 +103,7 @@ export class PixivUtil {
     }
     const pixiv = PixivUtil.pixiv;
 
-    let [word, countAndLimit] = text.split('.');
+    let [word, countAndLimit = ''] = text.split('.');
     let [count, limit] = countAndLimit.split('/') as (string | number)[];
     console.log(word, count, limit);
     count = Math.max(Number(count) || 1, 1);
