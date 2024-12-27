@@ -111,25 +111,27 @@ export class PixivUtil {
 
     let [word, countAndLimit = ''] = text.split('.');
     let [count, limit] = countAndLimit.split('/') as (string | number)[];
-    console.log(word, count, limit);
+    console.log({ word, count, limit });
     count = Math.max(Number(count) || 1, 1);
     limit = Math.max(Number(limit) || 1, 30);
-    console.log(word, count, limit);
+    console.log({ word, count, limit });
 
     // 获取插画并按照收藏数倒序
     let illusts = await pixiv.search
       .illusts({
         word,
         r18: false,
-        end_date: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
+        end_date: dayjs()
+          .subtract(Math.round(random(0, 10)), 'month')
+          .format('YYYY-MM-DD'),
         start_date: dayjs().subtract(10, 'year').format('YYYY-MM-DD'),
       })
       .catch(defaultCatchFetch);
     if (!illusts || illusts.length < 0) {
       return { success: false, error: '搜图失败' };
     }
-    console.log(pixiv.search.nextURL);
     if (pixiv.search.nextURL) {
+      console.log('下一页', pixiv.search.nextURL);
       illusts = await pixiv.util.multiCall(
         { next_url: pixiv.search.nextURL, illusts },
         Math.ceil(limit / 30),
@@ -145,6 +147,9 @@ export class PixivUtil {
       return !tag;
     });
     console.log(`过滤后${illusts.length}个`);
+    if (!illusts || illusts.length < 0) {
+      return { success: false, error: '搜图失败' };
+    }
 
     // 从列表中的前三分之一的图随机取几张图
     const indexList: number[] = [];
