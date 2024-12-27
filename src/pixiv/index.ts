@@ -75,10 +75,8 @@ export class PixivUtil {
       return;
     }
     console.log('登录pixiv', refreshToken);
-    const pixiv = await Pixiv.refreshLogin(refreshToken).catch((error) => {
-      console.log(error);
-      return null;
-    });
+    const pixiv =
+      await Pixiv.refreshLogin(refreshToken).catch(defaultCatchFetch);
     if (!pixiv) {
       console.error('登录失败');
       return;
@@ -156,7 +154,7 @@ export class PixivUtil {
       return pixiv.util.downloadIllust(illust, path, 'large');
     });
 
-    await Promise.allSettled(downloadList);
+    await Promise.allSettled(downloadList).catch(defaultCatchFetch);
     console.log('图片下载完毕');
 
     let allFileNameList = fs.readdirSync(path);
