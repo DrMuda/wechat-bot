@@ -119,7 +119,7 @@ export class PixivUtil {
     // 获取插画并按照收藏数倒序
     let illusts = await pixiv.search
       .illusts({
-        word,
+        word: word.trim(),
         r18: false,
         end_date: dayjs()
           .subtract(Math.round(random(0, 10)), 'month')
@@ -127,7 +127,7 @@ export class PixivUtil {
         start_date: dayjs().subtract(10, 'year').format('YYYY-MM-DD'),
       })
       .catch(defaultCatchFetch);
-    if (!illusts || illusts.length < 0) {
+    if (!illusts) {
       return { success: false, error: '搜图失败' };
     }
     if (pixiv.search.nextURL) {
@@ -147,7 +147,7 @@ export class PixivUtil {
       return !tag;
     });
     console.log(`过滤后${illusts.length}个`);
-    if (!illusts || illusts.length < 0) {
+    if (!illusts || illusts.length <= 0) {
       return { success: false, error: '搜图失败' };
     }
 
