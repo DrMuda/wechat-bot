@@ -1,4 +1,4 @@
-import Pixiv, { PixivIllust } from 'pixiv.ts';
+import Pixiv, { PixivIllust, PixivParams } from 'pixiv.ts';
 import { isDev, saveDataDir } from 'src/config';
 import {
   defaultCatchFetch,
@@ -111,22 +111,21 @@ export class PixivUtil {
 
     let [word, countAndLimit = ''] = text.split('.');
     let [count, limit] = countAndLimit.split('/') as (string | number)[];
-    console.log({ word, count, limit });
     count = Math.max(Number(count) || 1, 1);
     limit = Math.max(Number(limit) || 1, 30);
-    console.log({ word, count, limit });
 
+    const params: PixivParams = {
+      word: word.trim(),
+      r18: false,
+      end_date: dayjs()
+        .subtract(Math.round(random(0, 10)), 'month')
+        .format('YYYY-MM-DD'),
+      start_date: dayjs().subtract(10, 'year').format('YYYY-MM-DD'),
+      type: 'illust',
+    };
+    console.log(JSON.stringify({ ...params, count, limit }));
     // 获取插画并按照收藏数倒序
-    let illusts = await pixiv.search
-      .illusts({
-        word: word.trim(),
-        r18: false,
-        end_date: dayjs()
-          .subtract(Math.round(random(0, 10)), 'month')
-          .format('YYYY-MM-DD'),
-        start_date: dayjs().subtract(10, 'year').format('YYYY-MM-DD'),
-      })
-      .catch(defaultCatchFetch);
+    let illusts = await pixiv.search.illusts(params).catch(defaultCatchFetch);
     if (!illusts) {
       return { success: false, error: '搜图失败' };
     }
@@ -162,8 +161,8 @@ export class PixivUtil {
     console.log(indexList);
 
     const illustForDownload: PixivIllust[] = [];
-    const timeStamp = isDev ? 'test' : Date.now();
-    const path = `${pixivIllustSavePath}/${timeStamp}`;
+    const timeStamp = Date.now();
+    const path = `${pixivIllustSavePath}/search/${timeStamp}`;
     const downloadList = indexList.map((index) => {
       const illust = illusts[index];
       if (!illust) return;
