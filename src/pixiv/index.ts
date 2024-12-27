@@ -25,42 +25,49 @@ export const searchPic = async ({
   roomName?: string;
   fromUser?: string;
 }) => {
-  const { success, error, picPathList, tags } =
-    await PixivUtil.searchAndDownloadPic({
-      text: content,
-    });
-  if (!success) {
-    console.error(error);
-    sendMsgToWx({
-      content: error || '失败了',
-      isRoom,
-      to: (isRoom ? roomName : fromUser) || '',
-    });
-    return;
-  }
   const sendParams = { isRoom, to: (isRoom ? roomName : fromUser) || '' };
-  if (tags) {
-    console.log(['包含的tag', tags.join(', ')].join('\n'));
-    sendMsgToWx({
-      ...sendParams,
-      content: ['包含的tag', tags.join(', ')].join('\n'),
-    });
-  }
-  for (const picPath of picPathList!) {
-    console.log(`发送图片， ${picPath}, ${isRoom ? roomName : fromUser}`);
-    const res = await sendPicToWx({
-      ...sendParams,
-      picPath,
-    });
-    if (res?.data?.success !== true) {
-      try {
-        console.log('发送图报错了==================');
-        console.log(res?.data.message);
-        console.log(JSON.stringify(res));
-      } catch (error) {
-        console.log(res);
+  try {
+    const { success, error, picPathList, tags } =
+      (await PixivUtil.searchAndDownloadPic({
+        text: content,
+      }).catch(defaultCatchFetch)) || { success: false, error: '报错了' };
+    if (!success) {
+      console.error(error);
+      sendMsgToWx({
+        ...sendParams,
+        content: error || '失败了',
+      });
+      return;
+    }
+    if (tags) {
+      console.log(['包含的tag', tags.join(', ')].join('\n'));
+      sendMsgToWx({
+        ...sendParams,
+        content: ['包含的tag', tags.join(', ')].join('\n'),
+      });
+    }
+    for (const picPath of picPathList!) {
+      console.log(`发送图片， ${picPath}, ${isRoom ? roomName : fromUser}`);
+      const res = await sendPicToWx({
+        ...sendParams,
+        picPath,
+      });
+      if (res?.data?.success !== true) {
+        try {
+          console.log('发送图报错了==================');
+          console.log(res?.data.message);
+          console.log(JSON.stringify(res));
+        } catch (error) {
+          console.log(res);
+        }
       }
     }
+  } catch (error) {
+    console.log(error);
+    sendMsgToWx({
+      ...sendParams,
+      content: '报错了',
+    });
   }
 };
 
