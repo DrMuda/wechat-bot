@@ -50,7 +50,7 @@ async function bootstrap() {
         console.log(`重试${i + 1}次`);
       }
     },
-    { time: '9:30:00' },
+    { time: '9:35:00' },
   );
   dailySendPixivTop1.start();
 }

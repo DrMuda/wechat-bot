@@ -204,7 +204,7 @@ export class PixivUtil {
     );
     const illusts = await pixiv.illust
       .ranking({
-        mode: 'day_male_r18',
+        mode: 'day_male',
         r18: false,
         type: 'illust',
       })
