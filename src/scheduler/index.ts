@@ -1,10 +1,13 @@
 const dayjs = require('dayjs');
+const duration = require('dayjs/plugin/duration');
+dayjs.extend(duration);
 
 type Task = () => void;
 
 interface SchedulerOptions {
   time: string; // 每天执行的时间，例如 '14:30:00'
   timezone?: string; // 时区（可选）
+  name: string;
 }
 
 export class DailyScheduler {
@@ -13,11 +16,13 @@ export class DailyScheduler {
   private timezone: string;
   private timer: NodeJS.Timeout | null = null;
   private lastRunTime: string | null = null;
+  private name: string;
 
   constructor(task: Task, options: SchedulerOptions) {
     this.task = task;
     this.time = options.time;
     this.timezone = options.timezone || 'local';
+    this.name = options.name;
   }
 
   /**
@@ -25,12 +30,12 @@ export class DailyScheduler {
    */
   start() {
     if (this.timer) {
-      console.warn('定时任务已在运行中！');
+      console.warn(`定时任务(${this.name})已在运行中！`);
       return;
     }
 
     this.scheduleNextExecution();
-    console.log(`定时任务已启动，每天在 ${this.time} 执行`);
+    console.log(`定时任务(${this.name})已启动，每天在 ${this.time} 执行`);
   }
 
   /**
@@ -40,7 +45,7 @@ export class DailyScheduler {
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
-      console.log('定时任务已停止');
+      console.log(`定时任务(${this.name})已停止`);
     }
   }
 
@@ -62,7 +67,9 @@ export class DailyScheduler {
     const delay = nextExecution.diff(now);
 
     console.log(
-      `下次执行时间：${nextExecution.format('YYYY-MM-DD HH:mm:ss')}, 距现在还有 ${delay / 1000} 秒`,
+      `(${this.name})下次执行时间：${nextExecution.format('YYYY-MM-DD HH:mm:ss')}, 距现在还有 ${dayjs
+        .duration(delay)
+        .format('HH:mm:ss')}`,
     );
 
     this.timer = setTimeout(() => {
@@ -76,13 +83,16 @@ export class DailyScheduler {
   /**
    * 执行任务
    */
-  private executeTask() {
+  private async executeTask() {
     try {
-      this.task();
+      console.log(
+        `(${this.name})任务开始执行，时间：${dayjs().format('YYYY-MM-DD HH:mm:ss')}`,
+      );
+      await this.task();
       this.lastRunTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
-      console.log(`任务执行成功，时间：${this.lastRunTime}`);
+      console.log(`(${this.name})任务执行成功，时间：${this.lastRunTime}`);
     } catch (error) {
-      console.error('任务执行失败:', error);
+      console.error(`(${this.name})任务执行失败:`, error);
     }
   }
 

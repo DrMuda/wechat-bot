@@ -205,11 +205,9 @@ export class PixivUtil {
     };
   }
 
-  public static async getDailyTop1(): Promise<{
+  public static async saveDailyTop1(): Promise<{
     success: boolean;
     error?: string;
-    picPathList?: string[];
-    tags?: string[];
   }> {
     if (!PixivUtil.pixiv) {
       await PixivUtil.init();
@@ -228,24 +226,42 @@ export class PixivUtil {
       .catch(() => null);
     console.log('搜图结束');
 
-    const timeStamp = Date.now();
-    const path = `${pixivIllustSavePath}/${timeStamp}`;
+    const path = `${pixivIllustSavePath}/top1/${dayjs().format('YYYYMMDD')}`;
     if (!illusts || !illusts[0]) {
       return { success: false, error: '查找排行榜失败' };
     }
     console.log(illusts[0].url);
     try {
       if (!fs.existsSync(path)) {
-        fs.mkdir(path, () => {});
+        fs.mkdir(path, (error) => {
+          console.log('创建失败', __dirname);
+          console.log(error);
+        });
       }
       await pixiv.util.downloadIllust(illusts[0], path, 'large');
     } catch (error) {
       console.error('图片下载失败');
     }
     console.log('下载每日排行top1完成');
+    return { success: true };
+  }
 
-    let allFileNameList = fs.readdirSync(path);
-    let picPathList = allFileNameList.map((fileName) => `${path}/${fileName}`);
-    return { success: true, picPathList: picPathList };
+  public static async getYesterdayTop1(): Promise<{
+    success: boolean;
+    error?: string;
+    picPathList?: string[];
+    tags?: string[];
+  }> {
+    try {
+      const path = `${pixivIllustSavePath}/top1/${dayjs().subtract(1, 'days').format('YYYYMMDD')}`;
+      let allFileNameList = fs.readdirSync(path);
+      let picPathList = allFileNameList.map(
+        (fileName) => `${path}/${fileName}`,
+      );
+      return { success: true, picPathList: picPathList };
+    } catch (error) {
+      console.log(error);
+      return { success: false, error: '读取昨日top1文件失败' };
+    }
   }
 }

@@ -1,7 +1,9 @@
 import { SaveData } from 'src/utils/type';
 
 export const isDev = process.env.NODE_ENV === 'develop';
-export const saveDataDir = isDev ? './wechat-bot-data' : '/wechat-bot-data';
+export const saveDataDir = isDev
+  ? `${__dirname}/../../wechat-bot-data`
+  : '/wechat-bot-data';
 export const configPath = `${saveDataDir}/config.json`;
 
 export const Keywords = {

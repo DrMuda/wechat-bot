@@ -159,11 +159,17 @@ export const defaultCatchFetch = (error: unknown) => {
 };
 
 export const getConfig = () => {
+  const defaultConfig: IConfig = {
+    refreshToken: '',
+    taskTime: { saveDailyTop1: '', sendYesterdayTop1: '' },
+  };
   if (!fs.existsSync(saveDataDir)) {
     fs.mkdirSync(saveDataDir);
   }
   if (!fs.existsSync(configPath)) {
-    fs.writeFileSync(configPath, '{}', { encoding: 'utf-8' });
+    fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), {
+      encoding: 'utf-8',
+    });
   }
   const fileContent = fs.readFileSync(configPath, { encoding: 'utf-8' });
   try {
