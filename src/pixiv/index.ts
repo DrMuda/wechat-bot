@@ -141,6 +141,7 @@ export class PixivUtil {
         indexList.push(index);
       }
     }
+    console.log(indexList);
 
     const illustForDownload: PixivIllust[] = [];
     const timeStamp = isDev ? 'test' : Date.now();
@@ -199,9 +200,7 @@ export class PixivUtil {
       return { success: false, error: 'pixiv登录失败' };
     }
     const pixiv = PixivUtil.pixiv;
-    console.log(
-      '搜图中',
-    );
+    console.log('搜图中');
     const illusts = await pixiv.illust
       .ranking({
         mode: 'day_male',
