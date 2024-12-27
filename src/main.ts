@@ -2,7 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './recvd/recvd.module';
 import { DailyScheduler } from 'src/scheduler';
 import { PixivUtil } from 'src/pixiv';
-import { defaultCatchFetch, sendPicToWx, waitTime } from 'src/utils';
+import {
+  defaultCatchFetch,
+  sendMsgToWx,
+  sendPicToWx,
+  waitTime,
+} from 'src/utils';
 
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
@@ -25,6 +30,11 @@ async function bootstrap() {
       for (let i = 0; i < maxTry; i++) {
         const { success, picPathList, error } = await PixivUtil.getDailyTop1();
         if (success && picPathList?.[0]) {
+          await sendMsgToWx({
+            isRoom: true,
+            to: '守法八代目',
+            content: '每日排行榜top1图集',
+          }).catch(defaultCatchFetch);
           const res = await sendPicToWx({
             isRoom: true,
             to: '守法八代目',
@@ -33,8 +43,8 @@ async function bootstrap() {
           if (res?.data?.success === true) {
             break;
           }
-        }else{
-          console.log(error)
+        } else {
+          console.log(error);
         }
         await waitTime(1000);
         console.log(`重试${i + 1}次`);
