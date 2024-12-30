@@ -4,53 +4,45 @@ import {
   defaultCatchFetch,
   getConfig,
   sendMsgToWx,
-  sendPicToWx,
+  sendPicToWxWithRetry,
   waitTime,
 } from 'src/utils';
 
-const sendYesterdayTop1 = async () => {
-  const { success, picPathList, error } = await PixivUtil.getYesterdayTop1();
-  console.log('开始发送昨日top1');
-  if (success && picPathList?.[0]) {
-    await sendMsgToWx({
-      isRoom: true,
-      to: '守法八代目',
-      content: '昨日排行榜top1图集',
-    }).catch(defaultCatchFetch);
-    await sendPicToWx({
-      isRoom: true,
-      to: '守法八代目',
-      picPath: picPathList[0],
-    }).catch(defaultCatchFetch);
-    return;
-  }
-  console.log(error);
-};
-
-const saveDailyTop1 = async () => {
+const sendDailyTop1 = async () => {
   const maxTry = 10;
-  console.log('开始保存今日top1');
+  console.log('开始获取top1');
+  let picPathList: string[] = [];
   for (let i = 0; i < maxTry; i++) {
-    const { success } = await PixivUtil.saveDailyTop1();
-    if (success) break;
-    console.log(`重试第${i + 1}次`);
+    const res = await PixivUtil.sendDailyTop1();
+    if (res.success) {
+      picPathList = res.picPathList || [];
+      break;
+    }
+    console.log(`获取top1失败， 重试第${i + 1}次`);
     await waitTime(1000);
   }
-  console.log('保存今日top1结束');
+  console.log('开始发送top1');
+  await sendMsgToWx({
+    isRoom: true,
+    to: '守法八代目',
+    content: '昨日排行榜top1图集',
+  }).catch(defaultCatchFetch);
+  await sendPicToWxWithRetry({
+    isRoom: true,
+    to: '守法八代目',
+    picPath: picPathList[0],
+    maxTry: 10,
+  }).catch(defaultCatchFetch);
+  console.log('发送top1结束');
 };
 
 export const runTask = () => {
   const { taskTime } = getConfig();
   const taskList: { name: string; task: () => void; time?: string }[] = [
     {
-      name: 'sendYesterdayTop1',
-      task: sendYesterdayTop1,
-      time: taskTime?.sendYesterdayTop1,
-    },
-    {
-      name: 'saveDailyTop1',
-      task: saveDailyTop1,
-      time: taskTime?.saveDailyTop1,
+      name: 'sendDailyTop1',
+      task: sendDailyTop1,
+      time: taskTime?.sendDailyTop1,
     },
   ];
 

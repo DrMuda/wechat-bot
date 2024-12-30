@@ -85,8 +85,5 @@ export interface RecvdRequestBodySource {
 
 export interface IConfig {
   refreshToken?: string;
-  taskTime?: {
-    sendYesterdayTop1?: string;
-    saveDailyTop1?: string;
-  };
+  taskTime?: { sendDailyTop1: string };
 }

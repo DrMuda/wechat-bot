@@ -53,15 +53,12 @@ export const sendMsgToWx = ({
   });
 };
 
-export const sendPicToWx = ({
-  picPath,
-  isRoom,
-  to,
-}: {
+interface SendPicToWxParams {
   to: string;
   isRoom: boolean;
   picPath: string;
-}) => {
+}
+export const sendPicToWx = ({ picPath, isRoom, to }: SendPicToWxParams) => {
   if (process.env.NODE_ENV === 'develop') return Promise.resolve();
 
   // 读取文件为 Buffer
@@ -97,6 +94,24 @@ export const sendPicToWx = ({
       },
     },
   );
+};
+
+export const sendPicToWxWithRetry = async ({
+  maxTry = 10,
+  ...params
+}: { maxTry?: number } & SendPicToWxParams) => {
+  for (let i = 0; i < maxTry; i++) {
+    const res = await sendPicToWx(params).catch(defaultCatchFetch);
+    console.log(res?.data);
+    if (res?.data?.success === true) {
+      return true;
+    }
+    console.log(
+      `发送【${params.picPath}】到【${params.to}】失败， 重试第${i + 1}次`,
+    );
+    await waitTime(1000);
+  }
+  return false;
 };
 
 export const waitTime = async (timeout: number) => {
@@ -161,7 +176,7 @@ export const defaultCatchFetch = (error: unknown) => {
 export const getConfig = () => {
   const defaultConfig: IConfig = {
     refreshToken: '',
-    taskTime: { saveDailyTop1: '', sendYesterdayTop1: '' },
+    taskTime: { sendDailyTop1: '' },
   };
   if (!fs.existsSync(saveDataDir)) {
     fs.mkdirSync(saveDataDir);
@@ -172,9 +187,20 @@ export const getConfig = () => {
     });
   }
   const fileContent = fs.readFileSync(configPath, { encoding: 'utf-8' });
+  let config = defaultConfig;
+  const backupPath = `${configPath}.${dayjs().format('YYYYMMDDHHmmss')}.backup`;
   try {
-    return JSON.parse(fileContent) as IConfig;
-  } catch {
-    return {} as IConfig;
+    config = JSON.parse(fileContent) as IConfig;
+  } catch (error) {
+    fs.writeFileSync(backupPath, fileContent, { encoding: 'utf-8' });
+    console.error(`配置文件不正确， 已备份到${backupPath} 并重置为默认模板`);
+    console.log(error);
+    config = defaultConfig;
   }
+  config = { ...defaultConfig, ...config };
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2), {
+    encoding: 'utf-8',
+  });
+
+  return config;
 };
