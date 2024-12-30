@@ -218,7 +218,11 @@ export class PixivUtil {
     const tagsSet = new Set<string>();
     illustForDownload.forEach(({ tags }) => {
       tags.forEach(({ name, translated_name }) => {
-        tagsSet.add(`${name}[${translated_name}]`);
+        if (translated_name) {
+          tagsSet.add(`${name}[${translated_name}]`);
+        } else {
+          tagsSet.add(name);
+        }
       });
     });
 
