@@ -118,7 +118,8 @@ export const sendPicToWxWithRetry = async ({
     {
       maxTry: 10,
       waitTimeMs: 500,
-      label: `发送【${params.picPath}】到【${params.to}】失败`,
+      failedLabel: `发送【${params.picPath}】到【${params.to}】失败`,
+      successLabel: `发送【${params.picPath}】到【${params.to}】成功`,
     },
   );
   return success;
@@ -220,20 +221,25 @@ export const retryExec = async (
   {
     maxTry,
     waitTimeMs,
-    label,
+    failedLabel,
+    successLabel,
   }: {
     maxTry: number;
     /** 重试等待时间， 毫秒 */
     waitTimeMs: number;
-    label: string;
+    failedLabel: string;
+    successLabel?: string;
   },
 ) => {
   for (let i = 0; i < maxTry; i++) {
     const success = await task();
-    if (success) return true;
+    if (success) {
+      successLabel && console.log(successLabel);
+      return true;
+    }
 
     console.log(
-      `${label}, ${waitTimeMs}毫秒后重试第${i + 1}次, 还剩${maxTry - i - 1} 次`,
+      `${failedLabel}, ${waitTimeMs}毫秒后重试第${i + 1}次, 还剩${maxTry - i - 1} 次`,
     );
     await waitTime(waitTimeMs);
   }

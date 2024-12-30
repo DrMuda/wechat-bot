@@ -83,7 +83,7 @@ export class PixivUtil {
         }
         return false;
       },
-      { label: 'pixiv登录失败', maxTry: 10, waitTimeMs: 500 },
+      { failedLabel: 'pixiv登录失败', maxTry: 10, waitTimeMs: 500 },
     );
   }
 
@@ -126,18 +126,20 @@ export class PixivUtil {
     await retryExec(
       async () => {
         illusts = await pixiv.search.illusts(params).catch(defaultCatchFetch);
-        if (pixiv.search.nextURL && illusts) {
+        if (pixiv.search.nextURL && illusts && limit > 30) {
           console.log('下一页', pixiv.search.nextURL);
-          illusts = await pixiv.util.multiCall(
-            { next_url: pixiv.search.nextURL, illusts },
-            Math.ceil(limit / 30),
-          );
+          illusts = await pixiv.util
+            .multiCall(
+              { next_url: pixiv.search.nextURL, illusts },
+              Math.ceil((limit - 30) / 30),
+            )
+            .catch(defaultCatchFetch);
         }
         if (illusts && illusts.length > 0) return true;
         return false;
       },
       {
-        label: `搜图【${params.word}】失败`,
+        failedLabel: `搜图【${params.word}】失败`,
         maxTry: 5,
         waitTimeMs: 500,
       },
@@ -197,7 +199,7 @@ export class PixivUtil {
           return false;
         }
       },
-      { label: '下载图片报错', maxTry: 5, waitTimeMs: 500 },
+      { failedLabel: '下载图片报错', maxTry: 5, waitTimeMs: 500 },
     );
     console.log('图片下载完毕');
 
@@ -258,7 +260,7 @@ export class PixivUtil {
         if (!illusts || !illusts[0]) return false;
         return true;
       },
-      { label: '查找排行榜失败', maxTry: 10, waitTimeMs: 1000 },
+      { failedLabel: '查找排行榜失败', maxTry: 10, waitTimeMs: 1000 },
     );
     console.log('搜图结束');
 
@@ -280,7 +282,7 @@ export class PixivUtil {
           return false;
         }
       },
-      { label: '图片下载失败', maxTry: 10, waitTimeMs: 1000 },
+      { failedLabel: '图片下载失败', maxTry: 10, waitTimeMs: 1000 },
     );
 
     console.log('下载每日排行top1完成');
