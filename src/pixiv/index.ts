@@ -154,8 +154,8 @@ export class PixivUtil {
     console.log(`查询到作品${illusts.length}个`);
     // 过滤掉爆乳tag， 柰子比整个身体都大, 太恶心了🤮
     illusts = illusts.filter(({ tags }) => {
-      const tag = tags.find(
-        ({ translated_name }) => translated_name === 'huge breasts',
+      const tag = tags.find(({ translated_name }) =>
+        ['big tits loli', 'huge breasts'].includes(translated_name || ''),
       );
       return !tag;
     });
