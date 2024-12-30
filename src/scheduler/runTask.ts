@@ -5,22 +5,19 @@ import {
   getConfig,
   sendMsgToWx,
   sendPicToWxWithRetry,
-  waitTime,
 } from 'src/utils';
 
 const sendDailyTop1 = async () => {
-  const maxTry = 10;
   console.log('开始获取top1');
   let picPathList: string[] = [];
-  for (let i = 0; i < maxTry; i++) {
-    const res = await PixivUtil.sendDailyTop1();
-    if (res.success) {
-      picPathList = res.picPathList || [];
-      break;
-    }
-    console.log(`获取top1失败， 重试第${i + 1}次`);
-    await waitTime(1000);
+
+  const res = await PixivUtil.sendDailyTop1();
+  if (!res.success) {
+    console.log(`获取top1失败`);
+    return;
   }
+  picPathList = res.picPathList || [];
+
   console.log('开始发送top1');
   await sendMsgToWx({
     isRoom: true,

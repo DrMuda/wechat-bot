@@ -5,7 +5,7 @@ import {
   saveDataMap as saveDataMapFn,
 } from 'src/saveData';
 import _dayjs, { Dayjs } from 'dayjs';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { configPath, saveDataDir, saveDataLabelMap } from 'src/config';
 import { IConfig, SaveData } from 'src/utils/type';
 import * as fs from 'fs';
@@ -59,8 +59,6 @@ interface SendPicToWxParams {
   picPath: string;
 }
 export const sendPicToWx = ({ picPath, isRoom, to }: SendPicToWxParams) => {
-  if (process.env.NODE_ENV === 'develop') return Promise.resolve();
-
   // 读取文件为 Buffer
   const fileBuffer = fs.readFileSync(picPath);
   const fileExtension = path.extname(picPath).toLowerCase();
@@ -77,6 +75,13 @@ export const sendPicToWx = ({ picPath, isRoom, to }: SendPicToWxParams) => {
     '.svg': 'image/svg+xml',
   };
 
+  if (fileBuffer.byteLength <= 0) {
+    console.error('文件大小为0');
+    return Promise.resolve({
+      data: { success: false, message: '文件大小为0' },
+    } as AxiosResponse);
+  }
+
   const formData = new FormData();
   formData.append('to', to);
   formData.append('isRoom', (isRoom ? 1 : 0).toString());
@@ -85,6 +90,9 @@ export const sendPicToWx = ({ picPath, isRoom, to }: SendPicToWxParams) => {
     contentType: mimeTypes[fileExtension],
   });
 
+  if (process.env.NODE_ENV === 'develop') {
+    return Promise.resolve({ data: { success: true } } as AxiosResponse);
+  }
   return axios.post(
     'http://localhost:3001/webhook/msg?token=YpIZOxT77sGR',
     formData,
@@ -100,18 +108,20 @@ export const sendPicToWxWithRetry = async ({
   maxTry = 10,
   ...params
 }: { maxTry?: number } & SendPicToWxParams) => {
-  for (let i = 0; i < maxTry; i++) {
-    const res = await sendPicToWx(params).catch(defaultCatchFetch);
-    console.log(res?.data);
-    if (res?.data?.success === true) {
-      return true;
-    }
-    console.log(
-      `发送【${params.picPath}】到【${params.to}】失败， 重试第${i + 1}次`,
-    );
-    await waitTime(1000);
-  }
-  return false;
+  const success = await retryExec(
+    async () => {
+      const res = await sendPicToWx(params).catch(defaultCatchFetch);
+      console.log(res?.data);
+      if (res?.data?.success === true) return true;
+      return false;
+    },
+    {
+      maxTry: 10,
+      waitTimeMs: 500,
+      label: `发送【${params.picPath}】到【${params.to}】失败`,
+    },
+  );
+  return success;
 };
 
 export const waitTime = async (timeout: number) => {
@@ -203,4 +213,29 @@ export const getConfig = () => {
   });
 
   return config;
+};
+
+export const retryExec = async (
+  task: () => boolean | Promise<boolean>,
+  {
+    maxTry,
+    waitTimeMs,
+    label,
+  }: {
+    maxTry: number;
+    /** 重试等待时间， 毫秒 */
+    waitTimeMs: number;
+    label: string;
+  },
+) => {
+  for (let i = 0; i < maxTry; i++) {
+    const success = await task();
+    if (success) return true;
+
+    console.log(
+      `${label}, ${waitTimeMs}毫秒后重试第${i + 1}次, 还剩${maxTry - i - 1} 次`,
+    );
+    await waitTime(waitTimeMs);
+  }
+  return false;
 };

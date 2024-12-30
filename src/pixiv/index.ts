@@ -1,12 +1,12 @@
 import Pixiv, { PixivIllust, PixivParams } from 'pixiv.ts';
-import { isDev, saveDataDir } from 'src/config';
+import { saveDataDir } from 'src/config';
 import {
   defaultCatchFetch,
   getConfig,
   random,
+  retryExec,
   sendMsgToWx,
-  sendPicToWx,
-  waitTime,
+  sendPicToWxWithRetry,
 } from 'src/utils';
 import * as fs from 'fs';
 
@@ -47,20 +47,10 @@ export const searchPic = async ({
       });
     }
     for (const picPath of picPathList!) {
-      console.log(`发送图片， ${picPath}, ${isRoom ? roomName : fromUser}`);
-      const res = await sendPicToWx({
+      await sendPicToWxWithRetry({
         ...sendParams,
         picPath,
       });
-      if (res?.data?.success !== true) {
-        try {
-          console.log('发送图报错了==================');
-          console.log(res?.data.message);
-          console.log(JSON.stringify(res));
-        } catch (error) {
-          console.log(res);
-        }
-      }
     }
   } catch (error) {
     console.log(error);
@@ -82,13 +72,19 @@ export class PixivUtil {
       return;
     }
     console.log('登录pixiv', refreshToken);
-    const pixiv =
-      await Pixiv.refreshLogin(refreshToken).catch(defaultCatchFetch);
-    if (!pixiv) {
-      console.error('登录失败');
-      return;
-    }
-    PixivUtil.pixiv = pixiv;
+    await retryExec(
+      async () => {
+        const pixiv =
+          await Pixiv.refreshLogin(refreshToken).catch(defaultCatchFetch);
+        if (pixiv) {
+          PixivUtil.pixiv = pixiv;
+          console.log('pixiv登录成功');
+          return true;
+        }
+        return false;
+      },
+      { label: 'pixiv登录失败', maxTry: 10, waitTimeMs: 500 },
+    );
   }
 
   public static async searchAndDownloadPic({
@@ -125,17 +121,35 @@ export class PixivUtil {
     };
     console.log(JSON.stringify({ ...params, count, limit }));
     // 获取插画并按照收藏数倒序
-    let illusts = await pixiv.search.illusts(params).catch(defaultCatchFetch);
+    let illusts: PixivIllust[] | null = [];
+
+    await retryExec(
+      async () => {
+        illusts = await pixiv.search.illusts(params).catch(defaultCatchFetch);
+        if (pixiv.search.nextURL && illusts) {
+          console.log('下一页', pixiv.search.nextURL);
+          illusts = await pixiv.util.multiCall(
+            { next_url: pixiv.search.nextURL, illusts },
+            Math.ceil(limit / 30),
+          );
+        }
+        if (illusts && illusts.length > 0) return true;
+        return false;
+      },
+      {
+        label: `搜图【${params.word}】失败`,
+        maxTry: 5,
+        waitTimeMs: 500,
+      },
+    );
+
     if (!illusts) {
       return { success: false, error: '搜图失败' };
     }
-    if (pixiv.search.nextURL) {
-      console.log('下一页', pixiv.search.nextURL);
-      illusts = await pixiv.util.multiCall(
-        { next_url: pixiv.search.nextURL, illusts },
-        Math.ceil(limit / 30),
-      );
+    if (illusts.length <= 0) {
+      return { success: false, error: '搜到0个图集' };
     }
+
     illusts = pixiv.util.sort(illusts);
     console.log(`查询到作品${illusts.length}个`);
     // 过滤掉爆乳tag， 柰子比整个身体都大, 太恶心了🤮
@@ -147,7 +161,7 @@ export class PixivUtil {
     });
     console.log(`过滤后${illusts.length}个`);
     if (!illusts || illusts.length <= 0) {
-      return { success: false, error: '搜图失败' };
+      return { success: false, error: '怎么都是爆乳，悲🤮' };
     }
 
     // 从列表中的前三分之一的图随机取几张图
@@ -164,7 +178,7 @@ export class PixivUtil {
     const timeStamp = Date.now();
     const path = `${pixivIllustSavePath}/search/${timeStamp}`;
     const downloadList = indexList.map((index) => {
-      const illust = illusts[index];
+      const illust = illusts?.[index];
       if (!illust) return;
       illustForDownload.push(illust);
       if (!fs.existsSync(path)) {
@@ -173,7 +187,18 @@ export class PixivUtil {
       return pixiv.util.downloadIllust(illust, path, 'large');
     });
 
-    await Promise.allSettled(downloadList).catch(defaultCatchFetch);
+    await retryExec(
+      async () => {
+        try {
+          await Promise.allSettled(downloadList).catch(defaultCatchFetch);
+          return true;
+        } catch (error) {
+          console.error(error);
+          return false;
+        }
+      },
+      { label: '下载图片报错', maxTry: 5, waitTimeMs: 500 },
+    );
     console.log('图片下载完毕');
 
     let allFileNameList = fs.readdirSync(path);
@@ -217,12 +242,20 @@ export class PixivUtil {
     }
     const pixiv = PixivUtil.pixiv;
     console.log('搜图中');
-    const illusts = await pixiv.illust
-      .ranking({
-        r18: false,
-        type: 'illust',
-      })
-      .catch(() => null);
+    let illusts: PixivIllust[] | null = [];
+    await retryExec(
+      async () => {
+        illusts = await pixiv.illust
+          .ranking({
+            r18: false,
+            type: 'illust',
+          })
+          .catch(defaultCatchFetch);
+        if (!illusts || !illusts[0]) return false;
+        return true;
+      },
+      { label: '查找排行榜失败', maxTry: 10, waitTimeMs: 1000 },
+    );
     console.log('搜图结束');
 
     const path = `${pixivIllustSavePath}/top1/${dayjs().format('YYYYMMDD')}`;
@@ -230,24 +263,26 @@ export class PixivUtil {
       return { success: false, error: '查找排行榜失败' };
     }
     console.log(illusts[0].url);
-    try {
-      if (!fs.existsSync(path)) {
-        fs.mkdir(path, () => {});
-      }
-      await pixiv.util.downloadIllust(illusts[0], path, 'large');
-    } catch (error) {
-      console.error('图片下载失败');
-    }
+    await retryExec(
+      async () => {
+        try {
+          if (!fs.existsSync(path)) {
+            fs.mkdir(path, () => {});
+          }
+          await pixiv.util.downloadIllust(illusts![0], path, 'large');
+          return true;
+        } catch (error) {
+          console.error(error);
+          return false;
+        }
+      },
+      { label: '图片下载失败', maxTry: 10, waitTimeMs: 1000 },
+    );
+
     console.log('下载每日排行top1完成');
-    try {
-      let allFileNameList = fs.readdirSync(path);
-      let picPathList = allFileNameList.map(
-        (fileName) => `${path}/${fileName}`,
-      );
-      return { success: true, picPathList: picPathList };
-    } catch (error) {
-      console.log(error);
-      return { success: false, error: '读取top1文件失败' };
-    }
+
+    let allFileNameList = fs.readdirSync(path);
+    let picPathList = allFileNameList.map((fileName) => `${path}/${fileName}`);
+    return { success: true, picPathList: picPathList };
   }
 }
