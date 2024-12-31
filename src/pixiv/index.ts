@@ -157,7 +157,9 @@ export class PixivUtil {
     // 过滤掉爆乳tag， 柰子比整个身体都大, 太恶心了🤮
     illusts = illusts.filter(({ tags }) => {
       const tag = tags.find(({ translated_name }) =>
-        ['big tits loli', 'huge breasts'].includes(translated_name || ''),
+        ['big tits loli', 'huge breasts', '3d'].includes(
+          translated_name?.toLowerCase() || '',
+        ),
       );
       return !tag;
     });
