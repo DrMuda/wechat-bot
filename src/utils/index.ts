@@ -187,8 +187,9 @@ export const defaultCatchFetch = (error: unknown) => {
 export const getConfig = () => {
   const defaultConfig: IConfig = {
     refreshToken: '',
-    banUserName: [],
     taskTime: { sendDailyTop1: '' },
+    blackList: [],
+    whiteList: [],
   };
   if (!fs.existsSync(saveDataDir)) {
     fs.mkdirSync(saveDataDir);

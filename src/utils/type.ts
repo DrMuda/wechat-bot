@@ -85,6 +85,7 @@ export interface RecvdRequestBodySource {
 
 export interface IConfig {
   refreshToken?: string;
-  banUserName: string[];
+  whiteList?: string[];
+  blackList?: string[];
   taskTime?: { sendDailyTop1: string };
 }

@@ -46,12 +46,16 @@ export class RecvdService {
     if (type !== 'text') return { success: false };
     if (isRoom && !isMentioned) return { success: false };
 
-    const { banUserName } = getConfig();
-    if (banUserName.includes(fromUser || '')) {
-      return {
-        success: true,
-        data: { content: '一切邪恶终将被制裁，你被ban了， 去spa😠' },
-      };
+    const { blackList = [], whiteList = [] } = getConfig();
+    const banMsg = {
+      success: true,
+      data: { content: '一切邪恶终将被制裁，你被ban了， 去spa😠' },
+    };
+    if (blackList.length > 0 && blackList.includes(fromUser || '')) {
+      return banMsg;
+    }
+    if (whiteList.length > 0 && !whiteList.includes(fromUser || '')) {
+      return banMsg;
     }
 
     if (content.includes(Keywords.Holiday)) return holiday();
