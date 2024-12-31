@@ -4,7 +4,7 @@ import { countdown, holiday, offWork } from 'src/countdown';
 import { JingZiQiService } from 'src/jingZiQi/index.service';
 import { getMoneyRanking } from 'src/money';
 import { TwentyOnePoint } from 'src/twentyOnePoint';
-import { getMyInfo } from 'src/utils';
+import { getConfig, getMyInfo } from 'src/utils';
 import { parseText as makeMoneyParseText } from 'src/makeMoney';
 import { parseText as upgradeParseText } from 'src/upgrade';
 import { searchPic } from 'src/pixiv';
@@ -45,6 +45,14 @@ export class RecvdService {
     if (isMsgFromSelf) return { success: false };
     if (type !== 'text') return { success: false };
     if (isRoom && !isMentioned) return { success: false };
+
+    const { banUserName } = getConfig();
+    if (banUserName.includes(fromUser || '')) {
+      return {
+        success: true,
+        data: { content: '一切邪恶终将被制裁，你被ban了， 去spa😠' },
+      };
+    }
 
     if (content.includes(Keywords.Holiday)) return holiday();
     if (content.includes(Keywords.OffWork)) return offWork();
